@@ -1,3 +1,4 @@
+use rand::Rng;
 use crate::game::board::Board;
 use thiserror::Error;
 
@@ -22,6 +23,13 @@ impl Game {
 
     pub fn target(&self) -> u16 {
         self.target
+    }
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        let mut rng = rand::rng();
+        Self::new(Board::random(), rng.random_range(1..=1000)).unwrap()
     }
 }
 
@@ -63,5 +71,13 @@ mod tests {
         }
 
         Ok(())
+    }
+    
+    #[test]
+    fn default_game_is_valid() {
+        let game = Game::default();
+        
+        assert_eq!(game.board().numbers().len(), 6);
+        assert!(game.target() >= 1 && game.target() <= 1000);
     }
 }

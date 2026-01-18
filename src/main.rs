@@ -20,6 +20,6 @@ fn main() {
 
     tracing_subscriber::registry().with(fmt_layer).init();
 
-    tracing::info!("Starting Yew application");
+    tracing::info!("Starting Countdown solver application");
     yew::Renderer::<App>::new().render();
 }
