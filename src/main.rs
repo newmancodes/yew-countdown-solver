@@ -1,4 +1,6 @@
 mod app;
+mod game;
+mod solver;
 
 use app::App;
 use tracing_subscriber::{filter::Targets, prelude::*};
@@ -21,4 +23,3 @@ fn main() {
     tracing::info!("Starting Yew application");
     yew::Renderer::<App>::new().render();
 }
-
