@@ -1,2 +1,2 @@
-mod game_solver;
+mod solver;
 mod iterative_deepening;

@@ -9,7 +9,7 @@ pub struct Game {
 }
 
 impl Game {
-    fn new(board: Board, target: u16) -> Result<Self, GameError> {
+    pub fn new(board: Board, target: u16) -> Result<Self, GameError> {
         if target < 1 || target > 1000 {
             return Err(GameError::InvalidTarget(target));
         }
@@ -72,11 +72,11 @@ mod tests {
 
         Ok(())
     }
-    
+
     #[test]
     fn default_game_is_valid() {
         let game = Game::default();
-        
+
         assert_eq!(game.board().numbers().len(), 6);
         assert!(game.target() >= 1 && game.target() <= 1000);
     }
