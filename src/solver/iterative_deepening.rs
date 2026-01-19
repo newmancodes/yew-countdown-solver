@@ -1,6 +1,6 @@
 use crate::game::board::Board;
 use crate::game::game::Game;
-use crate::solver::solver::{Solver, Solution};
+use crate::solver::solver::{Solution, Solver};
 
 #[derive(Debug)]
 struct IterativeDeepeningSolver<'a, T> {
@@ -53,7 +53,10 @@ mod tests {
 
         let solution = solver.solve();
 
-        assert!(solution.is_some());
+        assert!(
+            solution.is_some(),
+            "Expected solution for already solved game"
+        );
 
         let solution = solution.unwrap();
 
@@ -75,11 +78,18 @@ mod tests {
 
             let solution = solver.solve();
 
-            assert!(solution.is_some());
+            assert!(solution.is_some(), "Expected solution for game {:?}", game);
 
             let solution = solution.unwrap();
 
-            assert_eq!(solution.steps(), expected_solution_steps);
+            assert_eq!(
+                solution.steps(),
+                expected_solution_steps,
+                "Wrong solution steps for {:?} expected {} received {}",
+                game,
+                expected_solution_steps,
+                solution.steps()
+            );
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿pub trait Solver<'a, T> {
+pub trait Solver<'a, T> {
     fn solve(&'a self) -> Option<Solution<'a, T>>;
 }
 

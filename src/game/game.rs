@@ -1,5 +1,5 @@
-use rand::Rng;
 use crate::game::board::Board;
+use rand::Rng;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq)]
