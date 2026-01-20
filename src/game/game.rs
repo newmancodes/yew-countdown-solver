@@ -1,4 +1,5 @@
 use crate::game::board::Board;
+use crate::solver::solver::Solvable;
 use rand::Rng;
 use thiserror::Error;
 
@@ -30,6 +31,12 @@ impl Default for Game {
     fn default() -> Self {
         let mut rng = rand::rng();
         Self::new(Board::random(), rng.random_range(1..=1000)).unwrap()
+    }
+}
+
+impl Solvable for Game {
+    fn is_solved(&self) -> bool {
+        self.board.numbers().contains(&(self.target as u32))
     }
 }
 

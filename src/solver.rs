@@ -1,2 +1,2 @@
 mod iterative_deepening;
-mod solver;
+pub mod solver;

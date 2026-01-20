@@ -1,6 +1,6 @@
 use crate::game::board::Board;
 use crate::game::game::Game;
-use crate::solver::solver::{Solution, Solver};
+use crate::solver::solver::{Solution, Solvable, Solver};
 
 #[derive(Debug)]
 struct IterativeDeepeningSolver<'a, T> {
@@ -10,13 +10,19 @@ struct IterativeDeepeningSolver<'a, T> {
 impl<'a> IterativeDeepeningSolver<'a, Game> {
     pub fn new(game: &'a Game) -> Self {
         Self {
-            initial_state: game,
+            initial_state: game
         }
     }
+
+    fn is_solved(game: &Game) -> bool { game.is_solved() }
 }
 
 impl<'a> Solver<'a, Game> for IterativeDeepeningSolver<'a, Game> {
     fn solve(&self) -> Option<Solution<'a, Game>> {
+        if self.initial_state.is_solved() {
+            return Some(Solution::new(self.initial_state, 2));
+        }
+
         None
     }
 }

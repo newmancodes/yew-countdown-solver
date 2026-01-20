@@ -4,7 +4,7 @@ use thiserror::Error;
 
 #[derive(Debug, PartialEq)]
 pub struct Board {
-    numbers: Vec<u8>,
+    numbers: Vec<u32>,
 }
 
 impl Board {
@@ -15,7 +15,7 @@ impl Board {
         BoardBuilder::new()
     }
 
-    pub fn numbers(&self) -> &[u8] {
+    pub fn numbers(&self) -> &[u32] {
         &self.numbers
     }
 
@@ -116,7 +116,7 @@ impl BoardBuilder {
         self.numbers.sort_unstable();
 
         Ok(Board {
-            numbers: self.numbers,
+            numbers: self.numbers.into_iter().map(|n| n as u32).collect::<Vec<_>>(),
         })
     }
 
@@ -394,13 +394,13 @@ mod tests {
             let actual_small_number_count = board
                 .numbers()
                 .iter()
-                .filter(|&&n| Board::SMALL_NUMBERS.contains(&n))
+                .filter(|&&n| Board::SMALL_NUMBERS.contains(&(n as u8)))
                 .count();
 
             let actual_large_number_count = board
                 .numbers()
                 .iter()
-                .filter(|&&n| Board::LARGE_NUMBERS.contains(&n))
+                .filter(|&&n| Board::LARGE_NUMBERS.contains(&(n as u8)))
                 .count();
 
             assert_eq!(
