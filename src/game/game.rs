@@ -85,6 +85,6 @@ mod tests {
         let game = Game::default();
 
         assert_eq!(game.board().numbers().len(), 6);
-        assert!(game.target() >= 1 && game.target() <= 1000);
+        assert!(game.target() >= 1 && game.target() < 1000);
     }
 }
