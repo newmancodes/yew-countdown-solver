@@ -31,6 +31,8 @@ npm run build
 npm run watch
 ```
 
+**Note:** Tailwind CSS is automatically compiled via Trunk pre-build hook. The `npm run build` command runs automatically before each `trunk build` or `trunk serve` operation.
+
 ### Prerequisites
 
 ```bash
