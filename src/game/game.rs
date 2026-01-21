@@ -11,7 +11,7 @@ pub struct Game {
 
 impl Game {
     pub fn new(board: Board, target: u16) -> Result<Self, GameError> {
-        if target < 1 || target > 1000 {
+        if !(1..1000).contains(&target) {
             return Err(GameError::InvalidTarget(target));
         }
 
@@ -42,7 +42,7 @@ impl Solvable for Game {
 
 #[derive(Error, Debug)]
 pub enum GameError {
-    #[error("Invalid target: {0}. Only 1-1000 is allowed")]
+    #[error("Invalid target: {0}. Only 1-999 is allowed")]
     InvalidTarget(u16),
 }
 
@@ -51,8 +51,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn target_must_be_between_1_and_1000() -> Result<(), GameError> {
-        let targets: Vec<u16> = [vec![0u16], (1001u16..=u16::MAX).collect()].concat();
+    fn target_must_be_between_1_and_999_inclusive() -> Result<(), GameError> {
+        let targets: Vec<u16> = [vec![0u16], (1000u16..=u16::MAX).collect()].concat();
 
         for target in targets {
             let board = Board::random();
@@ -71,7 +71,7 @@ mod tests {
 
             assert_eq!(
                 format!("{}", err),
-                format!("Invalid target: {}. Only 1-1000 is allowed", target),
+                format!("Invalid target: {}. Only 1-999 is allowed", target),
                 "Wrong error message for invalid target {}",
                 target
             );
