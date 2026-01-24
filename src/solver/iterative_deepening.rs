@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
 use crate::game::board::Board;
 use crate::game::game::Game;
 use crate::solver::solver::{Solution, Solvable, Solver};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 struct IterativeDeepeningSolver<'a, T> {
@@ -17,7 +17,9 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
         }
     }
 
-    fn is_solved(game: &Game) -> bool { game.is_solved() }
+    fn is_solved(game: &Game) -> bool {
+        game.is_solved()
+    }
 }
 
 impl<'a> Solver<'a, Game> for IterativeDeepeningSolver<'a, Game> {

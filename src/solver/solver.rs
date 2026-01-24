@@ -4,7 +4,7 @@ pub trait Solvable {
 
 pub trait Solver<'a, S>
 where
-    S: Solvable
+    S: Solvable,
 {
     fn solve(&'a self) -> Option<Solution<'a, S>>;
 }
@@ -16,9 +16,12 @@ pub struct Solution<'a, S> {
 
 impl<'a, S> Solution<'a, S> {
     pub fn new(initial_state: &'a S, steps: usize) -> Self {
-        Self { initial_state, steps }
+        Self {
+            initial_state,
+            steps,
+        }
     }
-    
+
     pub fn initial_state(&self) -> &'a S {
         self.initial_state
     }

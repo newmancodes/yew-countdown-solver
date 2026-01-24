@@ -116,7 +116,11 @@ impl BoardBuilder {
         self.numbers.sort_unstable();
 
         Ok(Board {
-            numbers: self.numbers.into_iter().map(|n| n as u32).collect::<Vec<_>>(),
+            numbers: self
+                .numbers
+                .into_iter()
+                .map(|n| n as u32)
+                .collect::<Vec<_>>(),
         })
     }
 
