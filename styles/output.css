@@ -158,4 +158,8 @@
     display: none !important;
   }
 }
-@layer utilities;
+@layer utilities {
+  .static {
+    position: static;
+  }
+}
