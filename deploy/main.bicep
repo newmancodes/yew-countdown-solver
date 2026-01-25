@@ -4,7 +4,7 @@ module static_web_app 'br/public:avm/res/web/static-site:0.9.3' = {
     name: 'solver'
     params: {
         name: 'swa-solver'
-        location: 'uksouth'
+        location: 'westeurope'
         sku: 'Free'
     }
 }
