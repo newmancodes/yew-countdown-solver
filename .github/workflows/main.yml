@@ -19,13 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Sign in to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_DEPLOYMENT_APP_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_DEPLOYMENT_APP_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_DEPLOYMENT_APP_SUBSCRIPTION_ID }}
-
       - name: Configure WASM tooling
         run: |
           rustup target add wasm32-unknown-unknown
@@ -44,8 +37,31 @@ jobs:
       - name: Build Application
         run: |
           trunk build --release
-          cp ./staticwebapp.config.json ./dist
+          # cp ./staticwebapp.config.json ./dist
 
-      - name: Debug
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_DEPLOYMENT_APP_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_DEPLOYMENT_APP_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_DEPLOYMENT_APP_SUBSCRIPTION_ID }}
+
+      - name: Deploy Azure Deployment Stack
+        id: deploystack
+        uses: azure/bicep-deploy@v2
+        with:
+          type: deploymentStack
+          operation: create
+          name: stack-countdown-solver
+          description: Countdown Solver Deployment Stack
+          location: westeurope
+          scope: resourceGroup
+          subscription-id: ${{ secrets.AZURE_DEPLOYMENT_APP_SUBSCRIPTION_ID }}
+          resource-group-name: rg-countdown-solver
+          template-file: ./deploy/main.bicep
+          action-on-unmanage-resources: delete
+
+      - name: Deploy to Azure Static Web App
         run: |
-          az account show
+          deploymentToken=$(az staticwebapp secrets list --name ${{ steps.deploystack.outputs.staticWebAppName }} --query "properties.apiKey" -o tsv)
+          swa deploy ./dist --token $deploymentToken
