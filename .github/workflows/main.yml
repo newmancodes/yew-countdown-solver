@@ -26,6 +26,7 @@ jobs:
 
       - name: Install Node dependencies
         run: |
+          npm install -g @azure/static-web-apps-cli
           npm ci
 
       - name: Quality - Code Formatting

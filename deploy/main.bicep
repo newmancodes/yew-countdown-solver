@@ -6,6 +6,12 @@ module static_web_app 'br/public:avm/res/web/static-site:0.9.3' = {
         name: 'swa-solver'
         location: 'westeurope'
         sku: 'Free'
+        customDomains: [
+            {
+                domainName: 'cds.newman.digital'
+                validationMethod: 'CNAME'
+            }
+        ]
     }
 }
 
