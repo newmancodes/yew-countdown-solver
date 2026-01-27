@@ -61,7 +61,7 @@ jobs:
           resource-group-name: rg-countdown-solver
           template-file: ./deploy/main.bicep
           action-on-unmanage-resources: delete
-          deny-settings-mode: denyDelete
+          deny-settings-mode: denyWriteAndDelete
 
       - name: Deploy to Azure Static Web App
         run: |
