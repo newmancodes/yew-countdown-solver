@@ -3,7 +3,7 @@ use crate::solver::solver::Solvable;
 use rand::Rng;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Game {
     board: Board,
     target: u16,

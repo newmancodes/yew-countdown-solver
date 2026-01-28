@@ -4,7 +4,7 @@ use crate::solver::solver::{Solution, Solvable, Solver};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
-struct IterativeDeepeningSolver<'a, T> {
+pub struct IterativeDeepeningSolver<'a, T> {
     initial_state: &'a T,
     maximum_depth: usize,
 }

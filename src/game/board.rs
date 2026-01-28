@@ -2,7 +2,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Board {
     numbers: Vec<u32>,
 }
