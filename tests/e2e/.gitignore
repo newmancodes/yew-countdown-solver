@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+downloads/
+traces/
+screenshots/
+videos/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+*.iws
+.idea_modules/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

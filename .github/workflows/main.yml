@@ -33,6 +33,24 @@ jobs:
           npm install -g @azure/static-web-apps-cli
           npm ci
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install Python dependencies
+        working-directory: tests/e2e
+        run: uv sync
+
+      - name: Install Playwright browsers
+        working-directory: tests/e2e
+        run: uv run playwright install chromium --with-deps
+
       - name: Quality - Code Formatting
         run: cargo fmt --check
 

@@ -1,3 +1,6 @@
+[serve]
+headers = { "referrer-policy" = "no-referrer", "x-content-type-options" = "nosniff" }
+
 [[hooks]]
 stage = "pre_build"
 command = "npm"
