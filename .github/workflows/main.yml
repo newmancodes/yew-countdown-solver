@@ -71,4 +71,4 @@ jobs:
       - name: Deploy to Azure Static Web App
         run: |
           deploymentToken=$(az staticwebapp secrets list --name ${{ steps.deploystack.outputs.staticWebAppName }} --query "properties.apiKey" -o tsv)
-          swa deploy ./dist --token $deploymentToken
+          swa deploy ./dist --deployment-token $deploymentToken
