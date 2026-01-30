@@ -28,6 +28,12 @@ jobs:
           rustup target add wasm32-unknown-unknown
           cargo install trunk wasm-bindgen-cli
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '25'
+          cache: 'npm'
+
       - name: Install Node dependencies
         run: |
           npm install -g @azure/static-web-apps-cli
