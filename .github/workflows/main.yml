@@ -60,7 +60,6 @@ jobs:
       - name: Build Application
         run: |
           trunk build --release
-          # cp ./staticwebapp.config.json ./dist
 
       - name: Sign in to Azure
         uses: azure/login@v2
@@ -89,4 +88,4 @@ jobs:
       - name: Deploy to Azure Static Web App
         run: |
           deploymentToken=$(az staticwebapp secrets list --name ${{ steps.deploystack.outputs.staticWebAppName }} --query "properties.apiKey" -o tsv)
-          swa deploy ./dist --env production --deployment-token $deploymentToken
+          swa deploy ./dist --env production --deployment-token $deploymentToken --
