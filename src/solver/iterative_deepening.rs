@@ -1,7 +1,7 @@
 use crate::game::board::{Board, BoardAdjuster};
 use crate::game::game::Game;
 use crate::solver::solver::{Solution, Solvable, Solver, StateTraversal};
-use std::collections::{HashSet};
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct IterativeDeepeningSolver<'a, T> {
