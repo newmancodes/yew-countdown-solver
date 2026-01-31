@@ -100,16 +100,17 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
     }
 }
 
-impl<'a> Solver<'a, Game> for IterativeDeepeningSolver<'a, Game> {
-    fn solve(&self) -> Option<Solution<'a, Game>> {
+impl<'a> Solver<Game> for IterativeDeepeningSolver<'a, Game> {
+    fn solve(&self) -> Option<Solution<Game>> {
         if self.initial_state.is_solved() {
-            return Some(Solution::new(self.initial_state, 2));
+            return Some(Solution::new(self.initial_state.clone(), 2));
         }
 
         let mut depth_limit = 1;
         let initial_board = self.initial_state.board();
 
         while depth_limit <= self.maximum_depth {
+            tracing::info!("Depth limit: {}", depth_limit);
             let mut frontier = Vec::<StateTraversal<Board>>::default();
             let mut explored = HashSet::<Board>::default();
 
@@ -123,7 +124,7 @@ impl<'a> Solver<'a, Game> for IterativeDeepeningSolver<'a, Game> {
                     .numbers()
                     .contains(&(self.initial_state.target() as u32))
                 {
-                    return Some(Solution::new(&self.initial_state, depth_limit + 1));
+                    return Some(Solution::new(self.initial_state.clone(), depth_limit + 1));
                 }
 
                 for child_candidate in Self::generate_children(candidate.state()) {

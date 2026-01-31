@@ -1,8 +1,6 @@
 use crate::game::game::Game;
 use crate::solver::iterative_deepening::IterativeDeepeningSolver;
 use crate::solver::solver::Solver;
-use gloo_timers::future::sleep;
-use std::time::Duration;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
@@ -12,34 +10,41 @@ pub struct GameBoardProps {
     pub on_reset: Callback<MouseEvent>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum SolutionState {
+    NotAttempted,
+    Solving,
+    Solved(crate::solver::solver::Solution<Game>),
+    NotFound,
+}
+
 #[component]
 pub fn GameBoard(props: &GameBoardProps) -> Html {
-    let solving = use_state(|| false);
-    let solved = use_state(|| false);
+    let solution_state = use_state(|| SolutionState::NotAttempted);
     let game = props.game.clone();
 
     let on_solve_click = {
-        let solving = solving.clone();
-        let solved = solved.clone();
+        let solution_state = solution_state.clone();
         let game = game.clone();
 
         Callback::from(move |_| {
-            let solving = solving.clone();
-            let solved = solved.clone();
+            let solution_state = solution_state.clone();
             let game = game.clone();
 
-            solving.set(true);
+            solution_state.set(SolutionState::Solving);
 
-            spawn_local(async move {
-                sleep(Duration::from_secs(2)).await;
-
-                let solver = IterativeDeepeningSolver::new(&game);
-                let solution = solver.solve();
-                if solution.is_some() {
-                    solved.set(true);
-                }
-                solving.set(false);
-            });
+            let solver = IterativeDeepeningSolver::new(&game);
+            if let Some(solution) = solver.solve() {
+                tracing::info!(
+                    "Found solution for game {:?} in {} steps",
+                    game,
+                    solution.steps()
+                );
+                solution_state.set(SolutionState::Solved(solution));
+            } else {
+                tracing::info!("No solution found for game {:?}", game);
+                solution_state.set(SolutionState::NotFound);
+            }
         })
     };
 
@@ -65,24 +70,50 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                 <button
                     class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
                     onclick={on_solve_click}
-                    disabled={*solving}
-                    aria-busy={(*solving).to_string()}
+                    disabled={*solution_state != SolutionState::NotAttempted}
+                    aria-busy={(*solution_state != SolutionState::NotAttempted).to_string()}
                     aria-label="Solve game"
                 >
-                    { if *solving { "Solving..." } else { "Solve" } }
+                    { if *solution_state == SolutionState::Solving { "Solving..." } else { "Solve" } }
                 </button>
 
                 <button
                     class="bg-gray-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer flex items-center gap-2"
                     onclick={props.on_reset.clone()}
-                    disabled={*solving}
-                    aria-busy={(*solving).to_string()}
+                    disabled={*solution_state == SolutionState::Solving}
+                    aria-busy={(*solution_state == SolutionState::Solving).to_string()}
                     aria-label="Reset game"
                 >
                     <span>{"↻"}</span>
                     <span>{"Reset"}</span>
                 </button>
             </div>
+
+            {
+                match *solution_state {
+                    SolutionState::Solved(ref solution) => html! {
+                        <div class="w-full max-w-md bg-green-100 border-2 border-green-500 rounded-lg p-4">
+                            <div class="flex items-center gap-2 text-green-800 font-semibold mb-2">
+                                <span class="text-2xl">{"✓"}</span>
+                                <span>{format!("Solution found in {} steps!", solution.steps())}</span>
+                            </div>
+                            <details class="text-sm text-green-700">
+                                <summary class="cursor-pointer hover:underline">{"View solution"}</summary>
+                                // Display solution steps here
+                            </details>
+                        </div>
+                    },
+                    SolutionState::NotFound => html! {
+                        <div class="w-full max-w-md bg-red-100 border-2 border-red-500 rounded-lg p-4">
+                            <div class="flex items-center gap-2 text-red-800 font-semibold">
+                                <span class="text-2xl">{"✗"}</span>
+                                <span>{"No solution found. Try a new game!"}</span>
+                            </div>
+                        </div>
+                    },
+                    _ => html! {}
+                }
+            }
         </div>
     }
 }
