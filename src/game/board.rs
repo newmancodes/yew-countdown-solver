@@ -2,7 +2,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Board {
     numbers: Vec<u32>,
 }
@@ -154,6 +154,40 @@ pub enum BoardError {
 
     #[error("Board is overpopulated")]
     OverpopulatedBoard,
+}
+
+#[derive(Debug)]
+pub struct BoardAdjuster {
+    numbers: Vec<u32>,
+}
+
+impl BoardAdjuster {
+    pub fn from(board: &Board) -> Self {
+        BoardAdjuster {
+            numbers: board.numbers().iter().map(|&n| n).collect(),
+        }
+    }
+
+    pub fn remove_number(self: Self, number: u32) -> Self {
+        let mut numbers = self.numbers;
+        if let Some(pos) = numbers.iter().position(|&n| n == number) {
+            numbers.remove(pos);
+        }
+
+        BoardAdjuster { numbers }
+    }
+
+    pub fn add_number(self: Self, number: u32) -> Self {
+        BoardAdjuster {
+            numbers: [self.numbers, vec![number]].concat(),
+        }
+    }
+
+    pub fn build(self) -> Board {
+        let mut numbers = self.numbers;
+        numbers.sort_unstable();
+        Board { numbers }
+    }
 }
 
 #[cfg(test)]

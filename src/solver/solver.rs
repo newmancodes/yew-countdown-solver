@@ -30,3 +30,29 @@ impl<'a, S> Solution<'a, S> {
         self.steps
     }
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct StateTraversal<S> {
+    previous_state: Option<Box<StateTraversal<S>>>,
+    state: S,
+}
+
+impl<S> StateTraversal<S> {
+    pub fn initial_state(state: S) -> Self {
+        Self {
+            previous_state: None,
+            state,
+        }
+    }
+
+    pub fn intermediary(previous_state: StateTraversal<S>, state: S) -> Self {
+        Self {
+            previous_state: Some(Box::new(previous_state)),
+            state,
+        }
+    }
+
+    pub fn state(&self) -> &S {
+        &self.state
+    }
+}
