@@ -1,3 +1,4 @@
 {
-  "planStorage": "project"
+  "planStorage": "project",
+  "plansDirectory": "./.claude/plans"
 }
