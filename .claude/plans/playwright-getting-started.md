@@ -17,7 +17,8 @@ The CI pipeline already installs Python 3.13, uv, and Playwright browsers, but d
 
 ## Critical Files
 
-- `/home/steve/Projects/yew-countdown-solver/tests/e2e/pyproject.toml` - Dependencies already configured
+- `/home/steve/Projects/yew-countdown-solver/tests/e2e/pyproject.toml` - Dependencies to update (add pytest-playwright)
+- `/home/steve/Projects/yew-countdown-solver/.gitignore` - Add screenshots/ directory
 - `/home/steve/Projects/yew-countdown-solver/.github/workflows/main.yml` - CI pipeline to modify
 - `/home/steve/Projects/yew-countdown-solver/src/components/game_provider.rs` - UI reference for selectors
 - `/home/steve/Projects/yew-countdown-solver/src/components/game_board.rs` - UI reference for selectors
@@ -26,19 +27,41 @@ The CI pipeline already installs Python 3.13, uv, and Playwright browsers, but d
 
 ```
 tests/e2e/
+├── .env.example                # Environment variable documentation
 ├── pytest.ini                  # pytest configuration
 ├── conftest.py                 # pytest fixtures and helpers
 ├── tests/                      # test directory
 │   ├── __init__.py
 │   ├── test_game_flow.py       # Core game flow tests
 │   └── test_solver.py          # Solver functionality tests
-├── fixtures/                   # Page Object Model
+├── pages/                      # Page Object Model
 │   ├── __init__.py
 │   └── page_objects.py         # AppPage class with helper methods
-└── screenshots/                # Auto-created on test failures
+└── screenshots/                # Auto-created on test failures (gitignored)
 ```
 
 ## Detailed Implementation Steps
+
+### 0. Update Dependencies and .gitignore
+
+**File:** `tests/e2e/pyproject.toml`
+
+Add `pytest-playwright` to dev dependencies:
+```toml
+[dependency-groups]
+dev = [
+    "playwright>=1.57.0",
+    "pytest>=9.0.2",
+    "pytest-playwright>=0.6.0",
+]
+```
+
+**File:** `.gitignore`
+
+Add test artifacts to .gitignore:
+```
+tests/e2e/screenshots/
+```
 
 ### 1. Create pytest.ini
 
@@ -66,12 +89,13 @@ Implement pytest fixtures for browser management and automatic screenshot captur
 **Environment variables:**
 - `BASE_URL`: App URL (default: http://localhost:8080)
 - `HEADLESS`: Run headless (default: true)
+- `SOLVER_TIMEOUT`: Timeout for solver operations in milliseconds (default: 30000)
 
 **Screenshot on failure:** Hook into pytest's test result reporting to capture screenshots when tests fail, saving to `screenshots/` directory.
 
 ### 3. Create Page Object Model
 
-**File:** `tests/e2e/fixtures/page_objects.py`
+**File:** `tests/e2e/pages/page_objects.py`
 
 Create `AppPage` class with methods for interacting with the app:
 
@@ -91,8 +115,8 @@ Create `AppPage` class with methods for interacting with the app:
 - `get_target_number()`: Extract target number as int
 - `get_available_numbers()`: Extract list of 6 numbers
 - `get_solution_message()`: Get success/failure message text
-- `has_success_message()`: Check for "✓ Solution found in N steps!"
-- `has_failure_message()`: Check for "✗ No solution found"
+- `has_success_message()`: Check for "Solution found in" (actual text from Rust code)
+- `has_failure_message()`: Check for "No solution found" (actual text from Rust code)
 - `validate_game_board()`: Assert all required elements are visible
 
 ### 4. Create Test Files
@@ -127,7 +151,7 @@ Create `AppPage` class with methods for interacting with the app:
 1. `test_solve_button_triggers_solver`
    - Generate game
    - Click Solve button
-   - Wait for solution result (15s timeout)
+   - Wait for solution result (configurable timeout via SOLVER_TIMEOUT env var, default 30s)
    - Verify message contains "Solution found" or "No solution found"
 
 2. `test_solve_button_disabled_after_solving`
@@ -148,9 +172,25 @@ Create `AppPage` class with methods for interacting with the app:
 
 Empty `__init__.py` files in:
 - `tests/e2e/tests/__init__.py`
-- `tests/e2e/fixtures/__init__.py`
+- `tests/e2e/pages/__init__.py`
 
-### 6. Update CI/CD Pipeline
+### 6. Create .env.example
+
+**File:** `tests/e2e/.env.example`
+
+Document available environment variables:
+```bash
+# Base URL for the application under test
+BASE_URL=http://localhost:8080
+
+# Run browser in headless mode (true/false)
+HEADLESS=true
+
+# Timeout for solver operations in milliseconds
+SOLVER_TIMEOUT=30000
+```
+
+### 7. Update CI/CD Pipeline
 
 **File:** `.github/workflows/main.yml`
 
@@ -169,6 +209,7 @@ Empty `__init__.py` files in:
         env:
           BASE_URL: http://localhost:8080
           HEADLESS: true
+          SOLVER_TIMEOUT: 30000
         run: |
           uv run pytest tests/ \
             --verbose \
@@ -203,7 +244,7 @@ Empty `__init__.py` files in:
 7. **Stop server** (new)
 8. Deploy to Azure (existing)
 
-### 7. Delete Placeholder File
+### 8. Delete Placeholder File
 
 Remove `tests/e2e/main.py` as it's no longer needed (just contains "Hello from e2e!").
 
@@ -305,12 +346,24 @@ After implementation, verify:
 | Available numbers | `[aria-label="Available numbers"]` | game_board.rs:72 |
 | Solve button | `button[aria-label="Solve game"]` | game_board.rs:85 |
 | Reset button | `button[aria-label="Reset game"]` | game_board.rs:97 |
-| Success message | `text=/Solution found in \\d+ steps!/` | game_board.rs:110 |
-| Failure message | `text=No solution found` | game_board.rs:117 |
+| Success message | `text=Solution found in` | game_board.rs:98 |
+| Failure message | `text=No solution found` | game_board.rs:110 |
 
 ## Notes
 
 - **No Rust code changes required:** All selectors already exist with proper aria-labels
 - **Playwright vs Selenium:** Playwright chosen for speed, modern API, better WASM support
 - **pytest vs Playwright Test Runner:** Using pytest for Python ecosystem familiarity and better fixture support
+- **Message text accuracy:** Tests use actual message text from Rust code (without ✓/✗ symbols)
+- **Configurable timeouts:** SOLVER_TIMEOUT environment variable allows adjusting for slow solvers
 - **Future enhancements:** Could add visual regression testing, cross-browser testing (Firefox/WebKit), or mobile viewport testing
+
+## Review Recommendations Incorporated
+
+This plan has been updated to incorporate the following improvements:
+1. ✅ Added `pytest-playwright` dependency to pyproject.toml
+2. ✅ Updated message text matchers to match actual implementation (no ✓/✗ symbols)
+3. ✅ Added `tests/e2e/screenshots/` to .gitignore
+4. ✅ Renamed `fixtures/` → `pages/` directory for clarity
+5. ✅ Added configurable `SOLVER_TIMEOUT` environment variable
+6. ✅ Added `.env.example` file to document environment variables

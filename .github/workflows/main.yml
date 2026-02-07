@@ -67,6 +67,40 @@ jobs:
         run: |
           trunk build --release
 
+      - name: Start WASM Application Server
+        run: |
+          python3 -m http.server 8080 --directory ./dist &
+          echo $! > .server.pid
+          timeout 30 bash -c 'until curl -s http://localhost:8080 > /dev/null; do sleep 1; done'
+          echo "Server started on http://localhost:8080"
+
+      - name: Run E2E Tests
+        working-directory: tests/e2e
+        env:
+          BASE_URL: http://localhost:8080
+          HEADLESS: true
+          SOLVER_TIMEOUT: 30000
+        run: |
+          uv run pytest tests/ \
+            --verbose \
+            --tb=short
+
+      - name: Upload E2E Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: tests/e2e/screenshots/
+          retention-days: 7
+
+      - name: Stop WASM Application Server
+        if: always()
+        run: |
+          if [ -f .server.pid ]; then
+            kill $(cat .server.pid) || true
+            rm .server.pid
+          fi
+
       - name: Sign in to Azure
         uses: azure/login@v2
         with:
