@@ -1,6 +1,5 @@
 use rand::seq::SliceRandom;
 use rand::Rng;
-use std::fmt::Display;
 use thiserror::Error;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -165,11 +164,11 @@ pub struct BoardAdjuster {
 impl BoardAdjuster {
     pub fn from(board: &Board) -> Self {
         BoardAdjuster {
-            numbers: board.numbers().iter().map(|&n| n).collect(),
+            numbers: board.numbers().to_vec(),
         }
     }
 
-    pub fn remove_number(self: Self, number: u32) -> Self {
+    pub fn remove_number(self, number: u32) -> Self {
         let mut numbers = self.numbers;
         if let Some(pos) = numbers.iter().position(|&n| n == number) {
             numbers.remove(pos);
@@ -178,7 +177,7 @@ impl BoardAdjuster {
         BoardAdjuster { numbers }
     }
 
-    pub fn add_number(self: Self, number: u32) -> Self {
+    pub fn add_number(self, number: u32) -> Self {
         BoardAdjuster {
             numbers: [self.numbers, vec![number]].concat(),
         }

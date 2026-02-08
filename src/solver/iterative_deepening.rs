@@ -71,7 +71,7 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
                             .build(),
                     );
                 } else if board.numbers()[i] > board.numbers()[j]
-                    && board.numbers()[i] % board.numbers()[j] == 0
+                    && board.numbers()[i].is_multiple_of(board.numbers()[j])
                 {
                     children.push(
                         BoardAdjuster::from(board)
@@ -80,7 +80,7 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
                             .add_number(board.numbers()[i] / board.numbers()[j])
                             .build(),
                     );
-                } else if board.numbers()[j] % board.numbers()[i] == 0 {
+                } else if board.numbers()[j].is_multiple_of(board.numbers()[i]) {
                     children.push(
                         BoardAdjuster::from(board)
                             .remove_number(board.numbers()[i])

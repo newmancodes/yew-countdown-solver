@@ -99,7 +99,7 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                             <details class="text-sm text-green-700">
                                 <summary class="cursor-pointer hover:underline">{"View solution"}</summary>
                                 <ol class="mt3 space-y-2 list-decimal list-inside" role="list" aria-label="Solution steps">
-                                    { for solution.instructions().iter().enumerate().map(|(index, instruction)| {
+                                    { for solution.instructions().iter().map(|instruction| {
                                     html! {
                                         <li class="p-2 bg-white rounded border border-green-300" role="listitem">
                                             <code class="text-gray-800">
