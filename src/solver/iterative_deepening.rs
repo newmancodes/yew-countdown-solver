@@ -1,6 +1,6 @@
 use crate::game::board::{Board, BoardAdjuster};
 use crate::game::game::Game;
-use crate::solver::solver::{Solution, Problem, Solver, Instruction};
+use crate::solver::solver::{Instruction, Problem, Solution, Solver};
 use std::collections::HashSet;
 
 #[derive(Debug)]

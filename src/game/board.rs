@@ -1,6 +1,6 @@
-use std::fmt::Display;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::fmt::Display;
 use thiserror::Error;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
