@@ -66,7 +66,7 @@ def test_multiple_random_games(app_page: AppPage):
         number_sets.append(numbers)
 
         # Validate game
-        assert 1 <= target <= 1000, f"Game {i+1} target should be valid"
+        assert 1 <= target < 1000, f"Game {i+1} target should be valid"
         assert len(numbers) == 6, f"Game {i+1} should have 6 numbers"
 
         # Reset for next iteration
