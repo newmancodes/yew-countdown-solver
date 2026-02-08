@@ -1,7 +1,6 @@
-use crate::game::game::Game;
+use crate::game::game::{Board, Game};
 use crate::solver::iterative_deepening::IterativeDeepeningSolver;
 use crate::solver::solver::Solver;
-use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -14,7 +13,7 @@ pub struct GameBoardProps {
 pub enum SolutionState {
     NotAttempted,
     Solving,
-    Solved(crate::solver::solver::Solution<Game>),
+    Solved(crate::solver::solver::Solution<Game, Board>),
     NotFound,
 }
 

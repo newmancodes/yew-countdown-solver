@@ -1,34 +1,34 @@
-pub trait Solvable {
+pub trait Problem {
     fn is_solved(&self) -> bool;
 }
 
-pub trait Solver<S>
+pub trait Solver<P, S>
 where
-    S: Solvable,
+    P: Problem,
 {
-    fn solve(&self) -> Option<Solution<S>>;
+    fn solve(&self) -> Option<Solution<P, S>>;
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Solution<S> {
-    initial_state: S,
-    steps: usize,
+pub struct Solution<P, S> {
+    problem: P,
+    steps: Vec<StateTraversal<S>>,
 }
 
-impl<S> Solution<S> {
-    pub fn new(initial_state: S, steps: usize) -> Self {
+impl<P, S> Solution<P, S> {
+    pub fn new(problem: P, steps: Vec<StateTraversal<S>>) -> Self {
         Self {
-            initial_state,
+            problem,
             steps,
         }
     }
 
-    pub fn initial_state(&self) -> &S {
-        &self.initial_state
+    pub fn problem(&self) -> &P {
+        &self.problem
     }
 
     pub fn steps(&self) -> usize {
-        self.steps
+        self.steps.len()
     }
 }
 
@@ -46,7 +46,14 @@ impl<S> StateTraversal<S> {
         }
     }
 
-    pub fn intermediary(previous_state: StateTraversal<S>, state: S) -> Self {
+    pub fn intermediate_state(previous_state: StateTraversal<S>, state: S) -> Self {
+        Self {
+            previous_state: Some(Box::new(previous_state)),
+            state,
+        }
+    }
+
+    pub fn final_state(previous_state: StateTraversal<S>, state: S) -> Self {
         Self {
             previous_state: Some(Box::new(previous_state)),
             state,
@@ -55,5 +62,9 @@ impl<S> StateTraversal<S> {
 
     pub fn state(&self) -> &S {
         &self.state
+    }
+
+    pub fn previous_state(&self) -> Option<&StateTraversal<S>> {
+        self.previous_state.as_deref()
     }
 }

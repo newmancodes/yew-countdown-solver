@@ -1,5 +1,5 @@
-use crate::game::board::Board;
-use crate::solver::solver::Solvable;
+pub(crate) use crate::game::board::Board;
+use crate::solver::solver::Problem;
 use rand::Rng;
 use thiserror::Error;
 
@@ -34,7 +34,7 @@ impl Default for Game {
     }
 }
 
-impl Solvable for Game {
+impl Problem for Game {
     fn is_solved(&self) -> bool {
         self.board.numbers().contains(&(self.target as u32))
     }

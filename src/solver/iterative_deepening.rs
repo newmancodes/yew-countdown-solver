@@ -1,6 +1,6 @@
 use crate::game::board::{Board, BoardAdjuster};
 use crate::game::game::Game;
-use crate::solver::solver::{Solution, Solvable, Solver, StateTraversal};
+use crate::solver::solver::{Solution, Problem, Solver, StateTraversal};
 use std::collections::HashSet;
 
 #[derive(Debug)]
@@ -100,11 +100,14 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
     }
 }
 
-impl<'a> Solver<Game> for IterativeDeepeningSolver<'a, Game> {
-    fn solve(&self) -> Option<Solution<Game>> {
+impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
+    fn solve(&self) -> Option<Solution<Game, Board>> {
         if self.initial_state.is_solved() {
             // Simple solution just shows the start and end states
-            return Some(Solution::new(self.initial_state.clone(), 2));
+            let initial_state = StateTraversal::initial_state(self.initial_state.board().clone());
+            let end_state = StateTraversal::final_state(initial_state.clone(), self.initial_state.board().clone());
+            let steps = vec![initial_state, end_state];
+            return Some(Solution::new(self.initial_state.clone(), steps));
         }
 
         let mut depth_limit = 1;
@@ -126,7 +129,9 @@ impl<'a> Solver<Game> for IterativeDeepeningSolver<'a, Game> {
                     .contains(&(self.initial_state.target() as u32))
                 {
                     // A solution has the start, intermediate and end states in order
-                    return Some(Solution::new(self.initial_state.clone(), depth_limit + 1));
+                    let mut steps = Vec::with_capacity(depth_limit + 2);
+
+                    return Some(Solution::new(self.initial_state.clone(), steps));
                 }
 
                 for child_candidate in Self::generate_children(candidate.state()) {
@@ -136,7 +141,7 @@ impl<'a> Solver<Game> for IterativeDeepeningSolver<'a, Game> {
                             .iter()
                             .any(|traversal| traversal.state() == &child_candidate)
                     {
-                        frontier.push(StateTraversal::intermediary(
+                        frontier.push(StateTraversal::intermediate_state(
                             candidate.clone(),
                             child_candidate,
                         ));
