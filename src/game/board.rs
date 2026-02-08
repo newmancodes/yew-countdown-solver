@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use thiserror::Error;

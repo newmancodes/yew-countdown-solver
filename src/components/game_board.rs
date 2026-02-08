@@ -35,9 +35,9 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
             let solver = IterativeDeepeningSolver::new(&game);
             if let Some(solution) = solver.solve() {
                 tracing::info!(
-                    "Found solution for game {:?} in {} steps",
+                    "Found solution for game {:?} in {} operations",
                     game,
-                    solution.steps()
+                    solution.number_of_operations(),
                 );
                 solution_state.set(SolutionState::Solved(solution));
             } else {
@@ -94,11 +94,21 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                         <div class="w-full max-w-md bg-green-100 border-2 border-green-500 rounded-lg p-4">
                             <div class="flex items-center gap-2 text-green-800 font-semibold mb-2">
                                 <span class="text-2xl">{"✓"}</span>
-                                <span>{format!("Solution found in {} steps!", solution.steps())}</span>
+                                <span>{format!("Solution found in {} operations!", solution.number_of_operations())}</span>
                             </div>
                             <details class="text-sm text-green-700">
                                 <summary class="cursor-pointer hover:underline">{"View solution"}</summary>
-                                // Display solution steps here
+                                <ol class="mt3 space-y-2 list-decimal list-inside" role="list" aria-label="Solution steps">
+                                    { for solution.instructions().iter().enumerate().map(|(index, instruction)| {
+                                    html! {
+                                        <li class="p-2 bg-white rounded border border-green-300" role="listitem">
+                                            <code class="text-gray-800">
+                                                {format!("{} {} {} = {:?}", "left operand", "operation", "right operand", instruction.state())}
+                                            </code>
+                                        </li>
+                                    }
+                                })}
+                            </ol>
                             </details>
                         </div>
                     },

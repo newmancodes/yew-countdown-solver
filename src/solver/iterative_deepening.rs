@@ -1,6 +1,6 @@
 use crate::game::board::{Board, BoardAdjuster};
 use crate::game::game::Game;
-use crate::solver::solver::{Solution, Problem, Solver, StateTraversal};
+use crate::solver::solver::{Solution, Problem, Solver, Instruction};
 use std::collections::HashSet;
 
 #[derive(Debug)]
@@ -104,10 +104,9 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
     fn solve(&self) -> Option<Solution<Game, Board>> {
         if self.initial_state.is_solved() {
             // Simple solution just shows the start and end states
-            let initial_state = StateTraversal::initial_state(self.initial_state.board().clone());
-            let end_state = StateTraversal::final_state(initial_state.clone(), self.initial_state.board().clone());
-            let steps = vec![initial_state, end_state];
-            return Some(Solution::new(self.initial_state.clone(), steps));
+            let initial_state = Instruction::new(self.initial_state.board().clone());
+            let instructions = vec![initial_state];
+            return Some(Solution::new(self.initial_state.clone(), instructions));
         }
 
         let mut depth_limit = 1;
@@ -129,9 +128,15 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                     .contains(&(self.initial_state.target() as u32))
                 {
                     // A solution has the start, intermediate and end states in order
-                    let mut steps = Vec::with_capacity(depth_limit + 2);
-
-                    return Some(Solution::new(self.initial_state.clone(), steps));
+                    let mut instructions = Vec::with_capacity(depth_limit + 2);
+                    instructions.push(Instruction::new(candidate.state().clone()));
+                    let mut previous_state = candidate.previous_state();
+                    while let Some(visited_state) = previous_state {
+                        instructions.push(Instruction::new(visited_state.state().clone()));
+                        previous_state = visited_state.previous_state();
+                    }
+                    instructions.reverse();
+                    return Some(Solution::new(self.initial_state.clone(), instructions));
                 }
 
                 for child_candidate in Self::generate_children(candidate.state()) {
@@ -153,6 +158,43 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
         }
 
         None
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+struct StateTraversal<S> {
+    previous_state: Option<Box<StateTraversal<S>>>,
+    state: S,
+}
+
+impl<S> StateTraversal<S> {
+    pub fn initial_state(state: S) -> Self {
+        Self {
+            previous_state: None,
+            state,
+        }
+    }
+
+    pub fn intermediate_state(previous_state: StateTraversal<S>, state: S) -> Self {
+        Self {
+            previous_state: Some(Box::new(previous_state)),
+            state,
+        }
+    }
+
+    pub fn final_state(previous_state: StateTraversal<S>, state: S) -> Self {
+        Self {
+            previous_state: Some(Box::new(previous_state)),
+            state,
+        }
+    }
+
+    pub fn state(&self) -> &S {
+        &self.state
+    }
+
+    pub fn previous_state(&self) -> Option<&StateTraversal<S>> {
+        self.previous_state.as_deref()
     }
 }
 
@@ -195,17 +237,17 @@ mod tests {
 
         let solution = solution.unwrap();
 
-        assert_eq!(solution.steps(), 2);
+        assert_eq!(solution.number_of_operations(), 0);
     }
 
     #[test]
-    fn solvable_games_are_solved_in_the_expected_number_of_steps() {
+    fn solvable_games_are_solved_in_the_expected_number_of_operations() {
         let games_with_expected_solution_steps = [
-            (game!(12, 1, 2, 3, 4, 5, 6), 3),
-            (game!(350, 1, 4, 4, 5, 6, 50), 4),
-            (game!(410, 1, 3, 3, 8, 9, 50), 5),
-            (game!(277, 2, 3, 3, 5, 6, 75), 6),
-            (game!(831, 1, 10, 25, 50, 75, 100), 7),
+            (game!(12, 1, 2, 3, 4, 5, 6), 1),
+            (game!(350, 1, 4, 4, 5, 6, 50), 2),
+            (game!(410, 1, 3, 3, 8, 9, 50), 3),
+            (game!(277, 2, 3, 3, 5, 6, 75), 4),
+            (game!(831, 1, 10, 25, 50, 75, 100), 5),
         ];
 
         for (game, expected_solution_steps) in games_with_expected_solution_steps {
@@ -218,12 +260,12 @@ mod tests {
             let solution = solution.unwrap();
 
             assert_eq!(
-                solution.steps(),
+                solution.number_of_operations(),
                 expected_solution_steps,
                 "Wrong solution steps for {:?} expected {} received {}",
                 game,
                 expected_solution_steps,
-                solution.steps()
+                solution.number_of_operations()
             );
         }
     }
