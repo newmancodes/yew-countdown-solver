@@ -103,6 +103,7 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
 impl<'a> Solver<Game> for IterativeDeepeningSolver<'a, Game> {
     fn solve(&self) -> Option<Solution<Game>> {
         if self.initial_state.is_solved() {
+            // Simple solution just shows the start and end states
             return Some(Solution::new(self.initial_state.clone(), 2));
         }
 
@@ -124,6 +125,7 @@ impl<'a> Solver<Game> for IterativeDeepeningSolver<'a, Game> {
                     .numbers()
                     .contains(&(self.initial_state.target() as u32))
                 {
+                    // A solution has the start, intermediate and end states in order
                     return Some(Solution::new(self.initial_state.clone(), depth_limit + 1));
                 }
 
