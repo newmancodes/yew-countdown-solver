@@ -98,7 +98,7 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                             </div>
                             <details class="text-sm text-green-700">
                                 <summary class="cursor-pointer hover:underline">{"View solution"}</summary>
-                                <ol class="mt3 space-y-2 list-decimal list-inside" role="list" aria-label="Solution steps">
+                                <ol class="mt3 space-y-2 list-decimal list-inside" role="list" aria-label="Solution instructions">
                                     { for solution.instructions().iter().map(|instruction| {
                                     html! {
                                         <li class="p-2 bg-white rounded border border-green-300" role="listitem">

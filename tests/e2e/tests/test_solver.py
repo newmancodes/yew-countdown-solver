@@ -42,8 +42,8 @@ def test_solve_button_disabled_after_solving(app_page: AppPage):
         "Solve button should be disabled after solving"
 
 
-def test_solution_shows_step_count(app_page: AppPage):
-    """Test that successful solutions show a valid step count."""
+def test_solution_shows_instruction_count(app_page: AppPage):
+    """Test that successful solutions show a valid instruction count."""
     # Try up to 10 random games to find a solvable one
     for attempt in range(10):
         app_page.click_random_game()
@@ -53,10 +53,10 @@ def test_solution_shows_step_count(app_page: AppPage):
 
         # Check if we got a success message
         if app_page.has_success_message():
-            # Extract and validate step count
-            step_count = app_page.get_step_count()
-            assert step_count is not None, "Should have a step count"
-            assert step_count >= 1, f"Step count should be at least 1, got {step_count}"
+            # Extract and validate instruction count
+            instruction_count = app_page.get_instruction_count()
+            assert instruction_count is not None, "Should have a instruction count"
+            assert instruction_count >= 1, f"Step count should be at least 1, got {instruction_count}"
 
             # Success! Test passed
             return
@@ -81,8 +81,8 @@ def test_solver_handles_multiple_games(app_page: AppPage):
 
         # Capture result
         if app_page.has_success_message():
-            step_count = app_page.get_step_count()
-            results.append(("success", step_count))
+            instruction_count = app_page.get_instruction_count()
+            results.append(("success", instruction_count))
         elif app_page.has_failure_message():
             results.append(("failure", None))
         else:

@@ -138,25 +138,25 @@ class AppPage:
         """
         return self.page.locator('text=No solution found').is_visible()
 
-    def get_step_count(self) -> Optional[int]:
-        """Extract the step count from a success message.
+    def get_instruction_count(self) -> Optional[int]:
+        """Extract the instruction count from a success message.
 
         Returns:
-            The number of steps if a solution was found, None otherwise
+            The number of instructions if a solution was found, None otherwise
 
         Raises:
-            ValueError: If success message is present but step count cannot be parsed
+            ValueError: If success message is present but instruction count cannot be parsed
         """
         if not self.has_success_message():
             return None
 
         message = self.get_solution_message()
-        # Extract number from "Solution found in N steps!"
-        match = re.search(r'Solution found in (\d+) steps?', message)
+        # Extract number from "Solution found in N operations!"
+        match = re.search(r'Solution found in (\d+) operations?', message)
         if match:
             return int(match.group(1))
         else:
-            raise ValueError(f"Could not extract step count from: {message}")
+            raise ValueError(f"Could not extract instruction count from: {message}")
 
     def validate_game_board(self) -> None:
         """Assert that all required game board elements are visible.
