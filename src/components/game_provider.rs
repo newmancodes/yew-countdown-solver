@@ -1,3 +1,4 @@
+use crate::components::ManualEntry;
 use crate::game::board::Board;
 use crate::game::game::Game;
 use rand::Rng;
@@ -11,6 +12,7 @@ pub struct GameProviderProps {
 #[component]
 pub fn GameProvider(props: &GameProviderProps) -> Html {
     let show_custom_split = use_state(|| false);
+    let show_manual_entry = use_state(|| false);
 
     let generate_random_game = {
         let on_game_specified = props.on_game_specified.clone();
@@ -32,6 +34,20 @@ pub fn GameProvider(props: &GameProviderProps) -> Html {
         let show_custom_split = show_custom_split.clone();
         Callback::from(move |_: MouseEvent| {
             show_custom_split.set(false);
+        })
+    };
+
+    let open_manual_entry = {
+        let show_manual_entry = show_manual_entry.clone();
+        Callback::from(move |_: MouseEvent| {
+            show_manual_entry.set(true);
+        })
+    };
+
+    let close_manual_entry = {
+        let show_manual_entry = show_manual_entry.clone();
+        Callback::from(move |_: MouseEvent| {
+            show_manual_entry.set(false);
         })
     };
 
@@ -71,6 +87,11 @@ pub fn GameProvider(props: &GameProviderProps) -> Html {
                         {"Back"}
                     </button>
                 </div>
+            } else if *show_manual_entry {
+                <ManualEntry
+                    on_game_specified={props.on_game_specified.clone()}
+                    on_back={close_manual_entry}
+                />
             } else {
                 <div class="flex flex-wrap gap-4 justify-center w-full max-w-2xl">
                     <button
@@ -97,6 +118,7 @@ pub fn GameProvider(props: &GameProviderProps) -> Html {
                     <button
                         class="flex-1 min-w-[200px] bg-purple-500 hover:bg-purple-700 text-white font-bold py-6 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer flex flex-col items-center gap-3"
                         aria-label="Specify complete game setup"
+                        onclick={open_manual_entry}
                     >
                         <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>

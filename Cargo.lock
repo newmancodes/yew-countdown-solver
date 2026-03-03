@@ -1370,6 +1370,7 @@ dependencies = [
  "tracing-subscriber",
  "tracing-web",
  "wasm-bindgen-futures",
+ "web-sys",
  "yew",
 ]
 

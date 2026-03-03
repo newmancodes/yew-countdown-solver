@@ -20,6 +20,10 @@ class AppPage:
     CUSTOM_SPLIT_BUTTON = 'button[aria-label="Create game with number constraints"]'
     CUSTOM_SPLIT_SETUP = '[aria-label="Custom split setup"]'
     BACK_TO_OPTIONS_BUTTON = 'button[aria-label="Back to game options"]'
+    MANUAL_ENTRY_BUTTON = 'button[aria-label="Specify complete game setup"]'
+    MANUAL_ENTRY_SETUP = '[aria-label="Manual entry setup"]'
+    TARGET_INPUT = 'input[aria-label="Target input"]'
+    CONFIRM_GAME_BUTTON = 'button[aria-label="Confirm game"]'
 
     @staticmethod
     def select_large_number_button(n: int) -> str:
@@ -215,3 +219,42 @@ class AppPage:
     def is_on_custom_split_screen(self) -> bool:
         """Check if currently on the custom split setup screen."""
         return self.page.locator(self.CUSTOM_SPLIT_SETUP).is_visible()
+
+    def click_manual_entry(self) -> None:
+        """Click the Manual Entry button and wait for the setup screen to appear."""
+        self.page.click(self.MANUAL_ENTRY_BUTTON)
+        self.page.wait_for_selector(self.MANUAL_ENTRY_SETUP, state="visible")
+
+    def is_on_manual_entry_screen(self) -> bool:
+        """Check if currently on the manual entry setup screen."""
+        return self.page.locator(self.MANUAL_ENTRY_SETUP).is_visible()
+
+    def click_number(self, n: int) -> None:
+        """Click the number button for the given number."""
+        self.page.click(f'button[aria-label="number {n}"]')
+
+    def remove_selected_number(self, n: int) -> None:
+        """Click the remove button for the given selected number."""
+        self.page.click(f'button[aria-label="remove {n}"]')
+
+    def set_target(self, value: int) -> None:
+        """Fill the target input with the given value."""
+        self.page.fill(self.TARGET_INPUT, str(value))
+
+    def click_confirm_game(self) -> None:
+        """Click the Confirm Game button and wait for the game board to appear."""
+        self.page.click(self.CONFIRM_GAME_BUTTON)
+        self.page.wait_for_selector(self.GAME_BOARD, state="visible")
+
+    def is_confirm_disabled(self) -> bool:
+        """Check if the Confirm Game button is disabled."""
+        return self.page.locator(self.CONFIRM_GAME_BUTTON).is_disabled()
+
+    def is_confirm_enabled(self) -> bool:
+        """Check if the Confirm Game button is enabled."""
+        return self.page.locator(self.CONFIRM_GAME_BUTTON).is_enabled()
+
+    def select_numbers(self, numbers: List[int]) -> None:
+        """Click the number button for each number in the list."""
+        for n in numbers:
+            self.click_number(n)
