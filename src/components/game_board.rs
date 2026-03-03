@@ -1,6 +1,6 @@
 use crate::game::game::{Board, Game};
 use crate::solver::iterative_deepening::IterativeDeepeningSolver;
-use crate::solver::solver::Solver;
+use crate::solver::solver::{Operator, Solver};
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -98,16 +98,37 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                             </div>
                             <details class="text-sm text-green-700">
                                 <summary class="cursor-pointer hover:underline">{"View solution"}</summary>
-                                <ol class="mt3 space-y-2 list-decimal list-inside" role="list" aria-label="Solution instructions">
-                                    { for solution.instructions().iter().map(|instruction| {
-                                    html! {
-                                        <li class="p-2 bg-white rounded border border-green-300" role="listitem">
-                                            <code class="text-gray-800">
-                                                {format!("{} {} {} = {:?}", "left operand", "operation", "right operand", instruction.state())}
-                                            </code>
-                                        </li>
-                                    }
-                                })}
+                                <ol class="space-y-3" role="list" aria-label="Solution instructions">
+                                    { for solution.instructions().iter().enumerate().filter_map(|(i, instruction)| {
+                                        instruction.operation().map(|op| {
+                                            let symbol = match op.operator {
+                                                Operator::Add      => "+",
+                                                Operator::Subtract => "−",
+                                                Operator::Multiply => "×",
+                                                Operator::Divide   => "÷",
+                                            };
+                                            let result = op.result;
+                                            let numbers = instruction.state().numbers();
+                                            let highlight_idx = numbers.iter().position(|&n| n == result);
+                                            html! {
+                                                <li class="bg-white rounded border border-green-300 p-3" role="listitem">
+                                                    <div class="font-mono text-gray-800 font-semibold mb-2">
+                                                        { format!("{}. {} {} {} = {}", i, op.left, symbol, op.right, result) }
+                                                    </div>
+                                                    <div class="flex flex-wrap gap-1">
+                                                        { for numbers.iter().enumerate().map(|(idx, &n)| {
+                                                            let tile_class = if Some(idx) == highlight_idx {
+                                                                "bg-green-500 text-white text-sm font-semibold py-1 px-2 rounded border border-green-600"
+                                                            } else {
+                                                                "bg-white text-black text-sm font-semibold py-1 px-2 rounded border border-gray-400"
+                                                            };
+                                                            html! { <span class={tile_class}>{ n }</span> }
+                                                        })}
+                                                    </div>
+                                                </li>
+                                            }
+                                        })
+                                    })}
                             </ol>
                             </details>
                         </div>

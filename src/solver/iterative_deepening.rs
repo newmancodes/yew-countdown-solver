@@ -1,6 +1,6 @@
 use crate::game::board::{Board, BoardAdjuster};
 use crate::game::game::Game;
-use crate::solver::solver::{Instruction, Problem, Solution, Solver};
+use crate::solver::solver::{Instruction, Operation, Operator, Problem, Solution, Solver};
 use std::collections::HashSet;
 
 #[derive(Debug)]
@@ -21,73 +21,114 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
         game.is_solved()
     }
 
-    fn generate_children(board: &Board) -> Vec<Board> {
-        let mut children = Vec::<Board>::new();
+    fn generate_children(board: &Board) -> Vec<(Board, Operation)> {
+        let mut children = Vec::<(Board, Operation)>::new();
 
         for i in 0..(board.numbers().len() - 1) {
             for j in i + 1..board.numbers().len() {
+                let left = board.numbers()[i];
+                let right = board.numbers()[j];
+
                 // Addition
-                children.push(
+                let result = left + right;
+                children.push((
                     BoardAdjuster::from(board)
-                        .remove_number(board.numbers()[i])
-                        .remove_number(board.numbers()[j])
-                        .add_number(board.numbers()[i] + board.numbers()[j])
+                        .remove_number(left)
+                        .remove_number(right)
+                        .add_number(result)
                         .build(),
-                );
+                    Operation {
+                        left,
+                        operator: Operator::Add,
+                        right,
+                        result,
+                    },
+                ));
 
                 // Multiply
-                children.push(
+                let result = left * right;
+                children.push((
                     BoardAdjuster::from(board)
-                        .remove_number(board.numbers()[i])
-                        .remove_number(board.numbers()[j])
-                        .add_number(board.numbers()[i] * board.numbers()[j])
+                        .remove_number(left)
+                        .remove_number(right)
+                        .add_number(result)
                         .build(),
-                );
+                    Operation {
+                        left,
+                        operator: Operator::Multiply,
+                        right,
+                        result,
+                    },
+                ));
 
-                // Subtraction
-                if board.numbers()[i] != board.numbers()[j] {
-                    let mut board_adjuster = BoardAdjuster::from(board)
-                        .remove_number(board.numbers()[i])
-                        .remove_number(board.numbers()[j]);
-
-                    if board.numbers()[i] > board.numbers()[j] {
-                        board_adjuster =
-                            board_adjuster.add_number(board.numbers()[i] - board.numbers()[j]);
+                // Subtraction (larger - smaller, skip if equal)
+                if left != right {
+                    let (bigger, smaller) = if left > right {
+                        (left, right)
                     } else {
-                        board_adjuster =
-                            board_adjuster.add_number(board.numbers()[j] - board.numbers()[i]);
-                    }
-
-                    children.push(board_adjuster.build());
+                        (right, left)
+                    };
+                    let result = bigger - smaller;
+                    children.push((
+                        BoardAdjuster::from(board)
+                            .remove_number(left)
+                            .remove_number(right)
+                            .add_number(result)
+                            .build(),
+                        Operation {
+                            left: bigger,
+                            operator: Operator::Subtract,
+                            right: smaller,
+                            result,
+                        },
+                    ));
                 }
 
-                // Division
-                if board.numbers()[i] == board.numbers()[j] {
-                    children.push(
+                // Division (larger / smaller, only when result is integer)
+                if left == right {
+                    children.push((
                         BoardAdjuster::from(board)
-                            .remove_number(board.numbers()[i])
-                            .remove_number(board.numbers()[j])
+                            .remove_number(left)
+                            .remove_number(right)
                             .add_number(1)
                             .build(),
-                    );
-                } else if board.numbers()[i] > board.numbers()[j]
-                    && board.numbers()[i].is_multiple_of(board.numbers()[j])
-                {
-                    children.push(
+                        Operation {
+                            left,
+                            operator: Operator::Divide,
+                            right,
+                            result: 1,
+                        },
+                    ));
+                } else if left > right && left.is_multiple_of(right) {
+                    let result = left / right;
+                    children.push((
                         BoardAdjuster::from(board)
-                            .remove_number(board.numbers()[i])
-                            .remove_number(board.numbers()[j])
-                            .add_number(board.numbers()[i] / board.numbers()[j])
+                            .remove_number(left)
+                            .remove_number(right)
+                            .add_number(result)
                             .build(),
-                    );
-                } else if board.numbers()[j].is_multiple_of(board.numbers()[i]) {
-                    children.push(
+                        Operation {
+                            left,
+                            operator: Operator::Divide,
+                            right,
+                            result,
+                        },
+                    ));
+                } else if right.is_multiple_of(left) {
+                    let result = right / left;
+                    children.push((
                         BoardAdjuster::from(board)
-                            .remove_number(board.numbers()[i])
-                            .remove_number(board.numbers()[j])
-                            .add_number(board.numbers()[j] / board.numbers()[i])
+                            .remove_number(left)
+                            .remove_number(right)
+                            .add_number(result)
                             .build(),
-                    );
+                        Operation {
+                            left: right,
+                            operator: Operator::Divide,
+                            right: left,
+                            result,
+                        },
+                    ));
                 }
             }
         }
@@ -129,17 +170,29 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                 {
                     // A solution has the start, intermediate and end states in order
                     let mut instructions = Vec::with_capacity(depth_limit + 2);
-                    instructions.push(Instruction::new(candidate.state().clone()));
+                    if let Some(op) = candidate.operation.clone() {
+                        instructions
+                            .push(Instruction::with_operation(candidate.state().clone(), op));
+                    } else {
+                        instructions.push(Instruction::new(candidate.state().clone()));
+                    }
                     let mut previous_state = candidate.previous_state();
                     while let Some(visited_state) = previous_state {
-                        instructions.push(Instruction::new(visited_state.state().clone()));
+                        if let Some(op) = visited_state.operation.clone() {
+                            instructions.push(Instruction::with_operation(
+                                visited_state.state().clone(),
+                                op,
+                            ));
+                        } else {
+                            instructions.push(Instruction::new(visited_state.state().clone()));
+                        }
                         previous_state = visited_state.previous_state();
                     }
                     instructions.reverse();
                     return Some(Solution::new(self.initial_state.clone(), instructions));
                 }
 
-                for child_candidate in Self::generate_children(candidate.state()) {
+                for (child_candidate, operation) in Self::generate_children(candidate.state()) {
                     if self.calculate_child_depth(&child_candidate) < depth_limit
                         && !explored.contains(&child_candidate)
                         && !frontier
@@ -149,6 +202,7 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                         frontier.push(StateTraversal::intermediate_state(
                             candidate.clone(),
                             child_candidate,
+                            operation,
                         ));
                     }
                 }
@@ -165,6 +219,7 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
 struct StateTraversal<S> {
     previous_state: Option<Box<StateTraversal<S>>>,
     state: S,
+    operation: Option<Operation>,
 }
 
 impl<S> StateTraversal<S> {
@@ -172,20 +227,19 @@ impl<S> StateTraversal<S> {
         Self {
             previous_state: None,
             state,
+            operation: None,
         }
     }
 
-    pub fn intermediate_state(previous_state: StateTraversal<S>, state: S) -> Self {
+    pub fn intermediate_state(
+        previous_state: StateTraversal<S>,
+        state: S,
+        operation: Operation,
+    ) -> Self {
         Self {
             previous_state: Some(Box::new(previous_state)),
             state,
-        }
-    }
-
-    pub fn final_state(previous_state: StateTraversal<S>, state: S) -> Self {
-        Self {
-            previous_state: Some(Box::new(previous_state)),
-            state,
+            operation: Some(operation),
         }
     }
 
@@ -266,6 +320,26 @@ mod tests {
                 game,
                 expected_solution_steps,
                 solution.number_of_operations()
+            );
+        }
+    }
+
+    #[test]
+    fn solution_instructions_have_operations_for_all_but_initial() {
+        let game = game!(12, 1, 2, 3, 4, 5, 6);
+
+        let solver = IterativeDeepeningSolver::new(&game);
+        let solution = solver.solve().expect("Expected a solution");
+
+        let instructions = solution.instructions();
+        assert!(
+            instructions[0].operation().is_none(),
+            "Initial instruction should have no operation"
+        );
+        for instruction in &instructions[1..] {
+            assert!(
+                instruction.operation().is_some(),
+                "Non-initial instructions should have an operation"
             );
         }
     }

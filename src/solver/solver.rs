@@ -10,6 +10,22 @@ where
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum Operator {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Operation {
+    pub left: u32,
+    pub operator: Operator,
+    pub right: u32,
+    pub result: u32,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct Solution<P, S> {
     problem: P,
     instructions: Vec<Instruction<S>>,
@@ -39,14 +55,29 @@ impl<P, S> Solution<P, S> {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Instruction<S> {
     state: S,
+    operation: Option<Operation>,
 }
 
 impl<S> Instruction<S> {
     pub fn new(state: S) -> Self {
-        Self { state }
+        Self {
+            state,
+            operation: None,
+        }
+    }
+
+    pub fn with_operation(state: S, operation: Operation) -> Self {
+        Self {
+            state,
+            operation: Some(operation),
+        }
     }
 
     pub fn state(&self) -> &S {
         &self.state
+    }
+
+    pub fn operation(&self) -> Option<&Operation> {
+        self.operation.as_ref()
     }
 }
