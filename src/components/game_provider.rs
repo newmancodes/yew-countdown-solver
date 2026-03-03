@@ -58,26 +58,29 @@ pub fn GameProvider(props: &GameProviderProps) -> Html {
             if *show_custom_split {
                 <div aria-label="Custom split setup" class="flex flex-col items-center gap-6 w-full max-w-2xl">
                     <h2 class="text-2xl font-bold text-center">{"Choose Your Number Split"}</h2>
-                    <div class="flex flex-wrap gap-3 justify-center w-full">
-                        { for (0u8..=4).map(|large_count| {
-                            let small_count = 6 - large_count;
-                            let on_game_specified = props.on_game_specified.clone();
-                            html! {
-                                <button
-                                    class="flex-1 min-w-[150px] bg-blue-500 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
-                                    aria-label={format!("Select {} large number(s)", large_count)}
-                                    onclick={Callback::from(move |_: MouseEvent| {
-                                        let board = Board::random_with_number_mix_specified(small_count, large_count).unwrap();
-                                        let mut rng = rand::rng();
-                                        let target = rng.random_range(1u16..=999u16);
-                                        let game = Game::new(board, target).unwrap();
-                                        on_game_specified.emit(game);
-                                    })}
-                                >
-                                    {format!("{} large / {} small", large_count, small_count)}
-                                </button>
-                            }
-                        }) }
+                    <div class="flex flex-col items-center gap-2">
+                        <p class="text-sm text-gray-500">{"How many large numbers? (25 / 50 / 75 / 100)"}</p>
+                        <div class="inline-flex rounded-lg border-2 border-blue-500 overflow-hidden divide-x-2 divide-blue-500">
+                            { for (0u8..=4).map(|large_count| {
+                                let small_count = 6 - large_count;
+                                let on_game_specified = props.on_game_specified.clone();
+                                html! {
+                                    <button
+                                        class="px-6 py-3 font-bold text-xl text-blue-700 bg-white hover:bg-blue-100 transition-colors duration-150 cursor-pointer"
+                                        aria-label={format!("Select {} large number(s)", large_count)}
+                                        onclick={Callback::from(move |_: MouseEvent| {
+                                            let board = Board::random_with_number_mix_specified(small_count, large_count).unwrap();
+                                            let mut rng = rand::rng();
+                                            let target = rng.random_range(1u16..=999u16);
+                                            let game = Game::new(board, target).unwrap();
+                                            on_game_specified.emit(game);
+                                        })}
+                                    >
+                                        {large_count}
+                                    </button>
+                                }
+                            }) }
+                        </div>
                     </div>
                     <button
                         class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
