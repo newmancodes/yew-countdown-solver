@@ -251,6 +251,9 @@
   .max-w-md {
     max-width: var(--container-md);
   }
+  .min-w-\[150px\] {
+    min-width: 150px;
+  }
   .min-w-\[200px\] {
     min-width: 200px;
   }
@@ -334,6 +337,9 @@
   }
   .bg-blue-600 {
     background-color: var(--color-blue-600);
+  }
+  .bg-blue-700 {
+    background-color: var(--color-blue-700);
   }
   .bg-gray-500 {
     background-color: var(--color-gray-500);

@@ -17,6 +17,17 @@ class AppPage:
     RESET_BUTTON = 'button[aria-label="Reset game"]'
     GAME_BOARD = '[aria-label="Game board"]'
     PROVIDER_HEADING = 'text=Choose Numbers Round Setup'
+    CUSTOM_SPLIT_BUTTON = 'button[aria-label="Create game with number constraints"]'
+    CUSTOM_SPLIT_SETUP = '[aria-label="Custom split setup"]'
+    BACK_TO_OPTIONS_BUTTON = 'button[aria-label="Back to game options"]'
+
+    @staticmethod
+    def select_large_number_button(n: int) -> str:
+        return f'button[aria-label="Select {n} large number(s)"]'
+
+    @staticmethod
+    def large_numbers_in(numbers: List[int]) -> List[int]:
+        return [n for n in numbers if n in {25, 50, 75, 100}]
 
     def __init__(self, page: Page):
         """Initialize the AppPage with a Playwright page instance.
@@ -185,3 +196,22 @@ class AppPage:
             True if the Solve button is enabled
         """
         return self.page.locator(self.SOLVE_BUTTON).is_enabled()
+
+    def click_custom_split(self) -> None:
+        """Click the Custom Split button and wait for the custom split setup to appear."""
+        self.page.click(self.CUSTOM_SPLIT_BUTTON)
+        self.page.wait_for_selector(self.CUSTOM_SPLIT_SETUP, state="visible")
+
+    def select_large_count(self, n: int) -> None:
+        """Click the option button for N large numbers and wait for the game board to appear."""
+        self.page.click(self.select_large_number_button(n))
+        self.page.wait_for_selector(self.GAME_BOARD, state="visible")
+
+    def click_back_to_options(self) -> None:
+        """Click the Back button and wait for the provider heading to reappear."""
+        self.page.click(self.BACK_TO_OPTIONS_BUTTON)
+        self.page.wait_for_selector(self.PROVIDER_HEADING, state="visible")
+
+    def is_on_custom_split_screen(self) -> bool:
+        """Check if currently on the custom split setup screen."""
+        return self.page.locator(self.CUSTOM_SPLIT_SETUP).is_visible()
