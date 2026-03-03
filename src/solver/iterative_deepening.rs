@@ -71,8 +71,8 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
                     let result = bigger - smaller;
                     children.push((
                         BoardAdjuster::from(board)
-                            .remove_number(left)
-                            .remove_number(right)
+                            .remove_number(bigger)
+                            .remove_number(smaller)
                             .add_number(result)
                             .build(),
                         Operation {
