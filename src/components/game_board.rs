@@ -1,6 +1,6 @@
-use crate::game::game::{Board, Game};
+use crate::game::model::{Board, Game};
 use crate::solver::iterative_deepening::IterativeDeepeningSolver;
-use crate::solver::solver::{Operator, Solver};
+use crate::solver::traits::{Operator, Solver};
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -13,7 +13,7 @@ pub struct GameBoardProps {
 pub enum SolutionState {
     NotAttempted,
     Solving,
-    Solved(crate::solver::solver::Solution<Game, Board>),
+    Solved(crate::solver::traits::Solution<Game, Board>),
     NotFound,
 }
 

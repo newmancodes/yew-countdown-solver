@@ -1,5 +1,5 @@
 use crate::components::{GameBoard, GameProvider};
-use crate::game::game::Game;
+use crate::game::model::Game;
 use yew::prelude::*;
 
 #[component]

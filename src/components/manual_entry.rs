@@ -1,5 +1,5 @@
 use crate::game::board::BoardBuilder;
-use crate::game::game::Game;
+use crate::game::model::Game;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 

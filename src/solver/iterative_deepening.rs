@@ -1,6 +1,8 @@
 use crate::game::board::{Board, BoardAdjuster};
-use crate::game::game::Game;
-use crate::solver::solver::{Instruction, Operation, Operator, Problem, Solution, Solver};
+#[cfg(test)]
+use crate::game::board::BoardBuilder;
+use crate::game::model::Game;
+use crate::solver::traits::{Instruction, Operation, Operator, Problem, Solution, Solver};
 use std::collections::HashSet;
 
 #[derive(Debug)]
@@ -254,7 +256,7 @@ mod tests {
 
     macro_rules! game {
         ($target:expr, $($num:expr),+ $(,)?) => {{
-            let mut builder = Board::builder();
+            let mut builder = BoardBuilder::new();
             $(
                 builder = builder.add_number($num).unwrap();
             )+

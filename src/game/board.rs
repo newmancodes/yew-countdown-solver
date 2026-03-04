@@ -11,10 +11,6 @@ impl Board {
     const SMALL_NUMBERS: &[u8] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const LARGE_NUMBERS: &[u8] = &[25, 50, 75, 100];
 
-    pub fn builder() -> BoardBuilder {
-        BoardBuilder::new()
-    }
-
     pub fn numbers(&self) -> &[u32] {
         &self.numbers
     }
@@ -201,7 +197,7 @@ mod tests {
             .collect();
 
         for number in disallowed_numbers {
-            let board = Board::builder().add_number(number);
+            let board = BoardBuilder::new().add_number(number);
 
             assert!(board.is_err());
 
@@ -224,7 +220,7 @@ mod tests {
         let small_numbers: Vec<u8> = (1..=10).collect();
 
         for number in small_numbers {
-            let board = Board::builder()
+            let board = BoardBuilder::new()
                 .add_number(number)?
                 .add_number(number)?
                 .add_number(number);
@@ -256,7 +252,7 @@ mod tests {
         let large_numbers = [25, 50, 75, 100];
 
         for number in large_numbers {
-            let board = Board::builder().add_number(number)?.add_number(number);
+            let board = BoardBuilder::new().add_number(number)?.add_number(number);
 
             assert!(board.is_err(), "Expected error for large number {}", number);
 
@@ -282,7 +278,7 @@ mod tests {
 
     #[test]
     fn underpopulated_board_fails() -> Result<(), BoardError> {
-        let board = Board::builder()
+        let board = BoardBuilder::new()
             .add_number(1)?
             .add_number(2)?
             .add_number(3)?
@@ -310,7 +306,7 @@ mod tests {
 
     #[test]
     fn adding_a_seventh_number_fails() -> Result<(), BoardError> {
-        let board = Board::builder()
+        let board = BoardBuilder::new()
             .add_number(1)?
             .add_number(2)?
             .add_number(3)?
@@ -339,7 +335,7 @@ mod tests {
 
     #[test]
     fn valid_board_can_be_built() -> Result<(), BoardError> {
-        let board = Board::builder()
+        let board = BoardBuilder::new()
             .add_number(2)?
             .add_number(3)?
             .add_number(3)?
@@ -355,7 +351,7 @@ mod tests {
 
     #[test]
     fn valid_boards_are_their_numbers_sorted_in_ascending_order() -> Result<(), BoardError> {
-        let board = Board::builder()
+        let board = BoardBuilder::new()
             .add_number(6)?
             .add_number(75)?
             .add_number(2)?

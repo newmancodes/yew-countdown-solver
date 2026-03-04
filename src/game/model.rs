@@ -1,5 +1,5 @@
 pub(crate) use crate::game::board::Board;
-use crate::solver::solver::Problem;
+use crate::solver::traits::Problem;
 use rand::Rng;
 use thiserror::Error;
 

@@ -1,6 +1,6 @@
 use crate::components::ManualEntry;
 use crate::game::board::Board;
-use crate::game::game::Game;
+use crate::game::model::Game;
 use rand::Rng;
 use yew::prelude::*;
 
