@@ -11,7 +11,7 @@ pub struct Game {
 
 impl Game {
     pub fn new(board: Board, target: u16) -> Result<Self, GameError> {
-        if !(1..1000).contains(&target) {
+        if !(1..=999).contains(&target) {
             return Err(GameError::InvalidTarget(target));
         }
 
@@ -30,7 +30,7 @@ impl Game {
 impl Default for Game {
     fn default() -> Self {
         let mut rng = rand::rng();
-        Self::new(Board::random(), rng.random_range(1..=1000)).unwrap()
+        Self::new(Board::random(), rng.random_range(1..=999g)).unwrap()
     }
 }
 
