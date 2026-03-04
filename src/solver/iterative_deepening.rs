@@ -1,6 +1,6 @@
-use crate::game::board::{Board, BoardAdjuster};
 #[cfg(test)]
 use crate::game::board::BoardBuilder;
+use crate::game::board::{Board, BoardAdjuster};
 use crate::game::model::Game;
 use crate::solver::traits::{Instruction, Operation, Operator, Problem, Solution, Solver};
 use std::collections::HashSet;
