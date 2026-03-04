@@ -30,7 +30,7 @@ impl Game {
 impl Default for Game {
     fn default() -> Self {
         let mut rng = rand::rng();
-        Self::new(Board::random(), rng.random_range(1..=999g)).unwrap()
+        Self::new(Board::random(), rng.random_range(1..=999)).unwrap()
     }
 }
 
