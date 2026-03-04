@@ -14,15 +14,15 @@ class AppPage:
     TARGET_NUMBER = '[aria-label="Target number"]'
     AVAILABLE_NUMBERS = '[aria-label="Available numbers"]'
     SOLVE_BUTTON = 'button[aria-label="Solve game"]'
-    RESET_BUTTON = 'button[aria-label="Reset game"]'
+    RESET_BUTTON = 'button[aria-label="Start new game"]'
     GAME_BOARD = '[aria-label="Game board"]'
     PROVIDER_HEADING = 'text=Choose Numbers Round Setup'
-    CUSTOM_SPLIT_BUTTON = 'button[aria-label="Create game with number constraints"]'
+    CUSTOM_SPLIT_BUTTON = 'button[aria-label="Simulate a round by choosing your number mix"]'
     CUSTOM_SPLIT_SETUP = '[aria-label="Custom split setup"]'
     BACK_TO_OPTIONS_BUTTON = 'button[aria-label="Back to game options"]'
     MANUAL_ENTRY_BUTTON = 'button[aria-label="Specify complete game setup"]'
     MANUAL_ENTRY_SETUP = '[aria-label="Manual entry setup"]'
-    TARGET_INPUT = 'input[aria-label="Target input"]'
+    TARGET_INPUT = 'input#target-input'
     CONFIRM_GAME_BUTTON = 'button[aria-label="Confirm game"]'
 
     @staticmethod

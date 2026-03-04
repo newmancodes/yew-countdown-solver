@@ -39,10 +39,6 @@ impl<P, S> Solution<P, S> {
         }
     }
 
-    pub fn problem(&self) -> &P {
-        &self.problem
-    }
-
     pub fn number_of_operations(&self) -> usize {
         self.instructions.len() - 1
     }

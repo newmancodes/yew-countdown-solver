@@ -54,7 +54,7 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                     <span aria-label="Target number">{ game.target() }</span>
                 </div>
 
-                <div class="grid grid-cols-6 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-6 gap-3" role="list" aria-label="Available numbers">
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-3" role="list" aria-label="Available numbers">
                     { for game.board().numbers().iter().map(|number| {
                         html! {
                             <div role="listitem" class="bg-white text-black text-xl font-semibold flex items-center justify-center py-4 px-6 border-2 border-gray-400 rounded-lg">
@@ -67,24 +67,24 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
 
             <div class="flex flex-wrap gap-3 justify-center">
                 <button
-                    class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
+                    class="bg-gray-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-600"
+                    onclick={props.on_reset.clone()}
+                    disabled={*solution_state == SolutionState::Solving}
+                    aria-busy={(*solution_state == SolutionState::Solving).to_string()}
+                    aria-label="Start new game"
+                >
+                    <span aria-hidden="true">{"↻"}</span>
+                    <span>{"New Game"}</span>
+                </button>
+
+                <button
+                    class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                     onclick={on_solve_click}
                     disabled={*solution_state != SolutionState::NotAttempted}
                     aria-busy={(*solution_state != SolutionState::NotAttempted).to_string()}
                     aria-label="Solve game"
                 >
                     { if *solution_state == SolutionState::Solving { "Solving..." } else { "Solve" } }
-                </button>
-
-                <button
-                    class="bg-gray-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer flex items-center gap-2"
-                    onclick={props.on_reset.clone()}
-                    disabled={*solution_state == SolutionState::Solving}
-                    aria-busy={(*solution_state == SolutionState::Solving).to_string()}
-                    aria-label="Reset game"
-                >
-                    <span>{"↻"}</span>
-                    <span>{"Reset"}</span>
                 </button>
             </div>
 
@@ -93,50 +93,47 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                     SolutionState::Solved(ref solution) => html! {
                         <div class="w-full max-w-md bg-green-100 border-2 border-green-500 rounded-lg p-4">
                             <div class="flex items-center gap-2 text-green-800 font-semibold mb-2">
-                                <span class="text-2xl">{"✓"}</span>
+                                <span aria-hidden="true" class="text-2xl">{"✓"}</span>
                                 <span>{format!("Solution found in {} operations!", solution.number_of_operations())}</span>
                             </div>
-                            <details class="text-sm text-green-700">
-                                <summary class="cursor-pointer hover:underline">{"View solution"}</summary>
-                                <ol class="space-y-3" role="list" aria-label="Solution instructions">
-                                    { for solution.instructions().iter().enumerate().filter_map(|(i, instruction)| {
-                                        instruction.operation().map(|op| {
-                                            let symbol = match op.operator {
-                                                Operator::Add      => "+",
-                                                Operator::Subtract => "−",
-                                                Operator::Multiply => "×",
-                                                Operator::Divide   => "÷",
-                                            };
-                                            let result = op.result;
-                                            let numbers = instruction.state().numbers();
-                                            let highlight_idx = numbers.iter().position(|&n| n == result);
-                                            html! {
-                                                <li class="bg-white rounded border border-green-300 p-3" role="listitem">
-                                                    <div class="font-mono text-gray-800 font-semibold mb-2">
-                                                        { format!("{}. {} {} {} = {}", i, op.left, symbol, op.right, result) }
-                                                    </div>
-                                                    <div class="flex flex-wrap gap-1">
-                                                        { for numbers.iter().enumerate().map(|(idx, &n)| {
-                                                            let tile_class = if Some(idx) == highlight_idx {
-                                                                "bg-green-500 text-white text-sm font-semibold py-1 px-2 rounded border border-green-600"
-                                                            } else {
-                                                                "bg-white text-black text-sm font-semibold py-1 px-2 rounded border border-gray-400"
-                                                            };
-                                                            html! { <span class={tile_class}>{ n }</span> }
-                                                        })}
-                                                    </div>
-                                                </li>
-                                            }
-                                        })
-                                    })}
+                            <ol class="space-y-3 text-sm text-green-700" role="list" aria-label="Solution instructions">
+                                { for solution.instructions().iter().enumerate().filter_map(|(i, instruction)| {
+                                    instruction.operation().map(|op| {
+                                        let symbol = match op.operator {
+                                            Operator::Add      => "+",
+                                            Operator::Subtract => "−",
+                                            Operator::Multiply => "×",
+                                            Operator::Divide   => "÷",
+                                        };
+                                        let result = op.result;
+                                        let numbers = instruction.state().numbers();
+                                        let highlight_idx = numbers.iter().position(|&n| n == result);
+                                        html! {
+                                            <li class="bg-white rounded border border-green-300 p-3" role="listitem">
+                                                <div class="font-mono text-gray-800 font-semibold mb-2">
+                                                    { format!("{}. {} {} {} = {}", i, op.left, symbol, op.right, result) }
+                                                </div>
+                                                <div class="flex flex-wrap gap-1">
+                                                    { for numbers.iter().enumerate().map(|(idx, &n)| {
+                                                        let tile_class = if Some(idx) == highlight_idx {
+                                                            "bg-green-700 text-white text-sm font-semibold py-1 px-2 rounded border border-green-800"
+                                                        } else {
+                                                            "bg-white text-black text-sm font-semibold py-1 px-2 rounded border border-gray-400"
+                                                        };
+                                                        html! { <span class={tile_class}>{ n }</span> }
+                                                    })}
+                                                </div>
+                                            </li>
+                                        }
+                                    })
+                                })}
                             </ol>
-                            </details>
                         </div>
                     },
                     SolutionState::NotFound => html! {
                         <div class="w-full max-w-md bg-red-100 border-2 border-red-500 rounded-lg p-4">
                             <div class="flex items-center gap-2 text-red-800 font-semibold">
-                                <span class="text-2xl">{"✗"}</span>
+                                <span aria-hidden="true" class="text-2xl">{"✗"}</span>
                                 <span>{"No solution found. Try a new game!"}</span>
                             </div>
                         </div>

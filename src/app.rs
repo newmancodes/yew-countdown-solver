@@ -17,7 +17,8 @@ pub fn App() -> Html {
     };
 
     html! {
-        <main>
+        <main class="flex flex-col items-center gap-4 py-6 px-4">
+            <h1 class="text-3xl font-bold text-center">{"Numbers Round Solver"}</h1>
             { match &*game {
                 None => html! {
                     <GameProvider on_game_specified={ game_specified } />

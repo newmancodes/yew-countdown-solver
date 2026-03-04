@@ -31,6 +31,14 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
         .ok()
         .filter(|&t| (1..=999).contains(&t));
 
+    let target_error = if state.target_str.is_empty() {
+        None
+    } else if target.is_none() {
+        Some("Target must be between 1 and 999")
+    } else {
+        None
+    };
+
     let can_confirm = board_result.is_ok() && target.is_some();
 
     let on_target_input = {
@@ -70,60 +78,69 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
             <h2 class="text-2xl font-bold text-center">{"Manual Entry"}</h2>
 
             <div class="flex flex-col items-center gap-2">
-                <label class="font-semibold">{"Target (1–999)"}</label>
+                <label for="target-input" class="font-semibold">{"Target (1–999)"}</label>
                 <input
                     type="number"
+                    id="target-input"
                     min="1"
                     max="999"
-                    aria-label="Target input"
-                    class="border-2 border-gray-400 rounded-lg px-4 py-2 text-xl text-center w-32"
+                    class="border-2 border-gray-400 rounded-lg px-4 py-2 text-xl text-center w-32 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                     value={state.target_str.clone()}
                     oninput={on_target_input}
                 />
+                if let Some(err) = target_error {
+                    <p class="text-sm text-red-600">{err}</p>
+                }
             </div>
 
-            <div class="flex flex-col items-center gap-3 w-full">
-                <div class="flex flex-wrap gap-3 justify-center">
-                    { for [25u8, 50, 75, 100].into_iter().map(|n| {
-                        let count = state.selected.iter().filter(|&&x| x == n).count();
-                        let can_add = state.selected.len() < 6 && count < 1;
-                        let state_clone = state.clone();
-                        html! {
-                            <button
-                                class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-5 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
-                                aria-label={format!("number {}", n)}
-                                disabled={!can_add}
-                                onclick={Callback::from(move |_: MouseEvent| {
-                                    let mut new_state = (*state_clone).clone();
-                                    new_state.selected.push(n);
-                                    state_clone.set(new_state);
-                                })}
-                            >
-                                {n}
-                            </button>
-                        }
-                    }) }
+            <div class="flex flex-col items-center gap-4 w-full">
+                <div class="flex flex-col items-center gap-2 w-full">
+                    <p class="text-sm font-semibold text-gray-600">{"Large numbers — select up to 1 of each"}</p>
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        { for [25u8, 50, 75, 100].into_iter().map(|n| {
+                            let count = state.selected.iter().filter(|&&x| x == n).count();
+                            let can_add = state.selected.len() < 6 && count < 1;
+                            let state_clone = state.clone();
+                            html! {
+                                <button
+                                    class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
+                                    aria-label={format!("number {}", n)}
+                                    disabled={!can_add}
+                                    onclick={Callback::from(move |_: MouseEvent| {
+                                        let mut new_state = (*state_clone).clone();
+                                        new_state.selected.push(n);
+                                        state_clone.set(new_state);
+                                    })}
+                                >
+                                    {n}
+                                </button>
+                            }
+                        }) }
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-2 justify-center">
-                    { for (1u8..=10).map(|n| {
-                        let count = state.selected.iter().filter(|&&x| x == n).count();
-                        let can_add = state.selected.len() < 6 && count < 2;
-                        let state_clone = state.clone();
-                        html! {
-                            <button
-                                class="bg-green-500 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
-                                aria-label={format!("number {}", n)}
-                                disabled={!can_add}
-                                onclick={Callback::from(move |_: MouseEvent| {
-                                    let mut new_state = (*state_clone).clone();
-                                    new_state.selected.push(n);
-                                    state_clone.set(new_state);
-                                })}
-                            >
-                                {n}
-                            </button>
-                        }
-                    }) }
+                <div class="flex flex-col items-center gap-2 w-full">
+                    <p class="text-sm font-semibold text-gray-600">{"Small numbers — select up to 2 of each"}</p>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        { for (1u8..=10).map(|n| {
+                            let count = state.selected.iter().filter(|&&x| x == n).count();
+                            let can_add = state.selected.len() < 6 && count < 2;
+                            let state_clone = state.clone();
+                            html! {
+                                <button
+                                    class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
+                                    aria-label={format!("number {}", n)}
+                                    disabled={!can_add}
+                                    onclick={Callback::from(move |_: MouseEvent| {
+                                        let mut new_state = (*state_clone).clone();
+                                        new_state.selected.push(n);
+                                        state_clone.set(new_state);
+                                    })}
+                                >
+                                    {n}
+                                </button>
+                            }
+                        }) }
+                    </div>
                 </div>
             </div>
 
@@ -134,7 +151,7 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                         let state_clone = state.clone();
                         html! {
                             <button
-                                class="bg-white text-black text-xl font-semibold flex items-center justify-center py-4 px-2 border-2 border-gray-400 rounded-lg hover:bg-red-100 cursor-pointer"
+                                class="bg-white text-black text-xl font-semibold flex items-center justify-center py-4 px-2 border-2 border-gray-400 rounded-lg hover:bg-red-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                                 aria-label={format!("remove {}", n)}
                                 onclick={Callback::from(move |_: MouseEvent| {
                                     let mut new_state = (*state_clone).clone();
@@ -160,14 +177,14 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
 
             <div class="flex gap-4">
                 <button
-                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-600"
                     aria-label="Back to game options"
                     onclick={props.on_back.clone()}
                 >
                     {"Back"}
                 </button>
                 <button
-                    class="bg-purple-500 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 cursor-pointer"
+                    class="bg-purple-500 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-600"
                     aria-label="Confirm game"
                     disabled={!can_confirm}
                     onclick={on_confirm}

@@ -17,10 +17,6 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
         }
     }
 
-    fn is_solved(game: &Game) -> bool {
-        game.is_solved()
-    }
-
     fn generate_children(board: &Board) -> Vec<(Board, Operation)> {
         let mut children = Vec::<(Board, Operation)>::new();
 
