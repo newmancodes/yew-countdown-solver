@@ -15,14 +15,18 @@ class AppPage:
     AVAILABLE_NUMBERS = '[aria-label="Available numbers"]'
     SOLVE_BUTTON = 'button[aria-label="Solve game"]'
     RESET_BUTTON = 'button[aria-label="Start new game"]'
+    COMPETE_BUTTON = 'button[aria-label="Compete"]'
+    TIMER_DISPLAY = '[aria-label="Time remaining"]'
     GAME_BOARD = '[aria-label="Game board"]'
-    PROVIDER_HEADING = 'text=Choose Numbers Round Setup'
-    CUSTOM_SPLIT_BUTTON = 'button[aria-label="Simulate a round by choosing your number mix"]'
+    PROVIDER_HEADING = "text=Choose Numbers Round Setup"
+    CUSTOM_SPLIT_BUTTON = (
+        'button[aria-label="Simulate a round by choosing your number mix"]'
+    )
     CUSTOM_SPLIT_SETUP = '[aria-label="Custom split setup"]'
     BACK_TO_OPTIONS_BUTTON = 'button[aria-label="Back to game options"]'
     MANUAL_ENTRY_BUTTON = 'button[aria-label="Specify complete game setup"]'
     MANUAL_ENTRY_SETUP = '[aria-label="Manual entry setup"]'
-    TARGET_INPUT = 'input#target-input'
+    TARGET_INPUT = "input#target-input"
     CONFIRM_GAME_BUTTON = 'button[aria-label="Confirm game"]'
 
     @staticmethod
@@ -73,9 +77,9 @@ class AppPage:
         # Wait for solution message to appear
         if timeout:
             self.page.wait_for_selector(
-                'text=/Solution found|No solution found/',
+                "text=/Solution found|No solution found/",
                 timeout=timeout,
-                state="visible"
+                state="visible",
             )
 
     def click_reset(self) -> None:
@@ -133,7 +137,7 @@ class AppPage:
             TimeoutError: If no solution message appears
         """
         # Wait for either success or failure message
-        message_locator = self.page.locator('text=/Solution found|No solution found/')
+        message_locator = self.page.locator("text=/Solution found|No solution found/")
         message_locator.wait_for(state="visible", timeout=5000)
         return message_locator.inner_text()
 
@@ -143,7 +147,7 @@ class AppPage:
         Returns:
             True if "Solution found in" message is visible
         """
-        return self.page.locator('text=Solution found in').is_visible()
+        return self.page.locator("text=Solution found in").is_visible()
 
     def has_failure_message(self) -> bool:
         """Check if a failure message is displayed.
@@ -151,7 +155,7 @@ class AppPage:
         Returns:
             True if "No solution found" message is visible
         """
-        return self.page.locator('text=No solution found').is_visible()
+        return self.page.locator("text=No solution found").is_visible()
 
     def get_instruction_count(self) -> Optional[int]:
         """Extract the instruction count from a success message.
@@ -167,7 +171,7 @@ class AppPage:
 
         message = self.get_solution_message()
         # Extract number from "Solution found in N operations!"
-        match = re.search(r'Solution found in (\d+) operations?', message)
+        match = re.search(r"Solution found in (\d+) operations?", message)
         if match:
             return int(match.group(1))
         else:
@@ -258,3 +262,59 @@ class AppPage:
         """Click the number button for each number in the list."""
         for n in numbers:
             self.click_number(n)
+
+    def click_compete(self) -> None:
+        """Click the Compete button and wait for timer to appear."""
+        self.page.click(self.COMPETE_BUTTON)
+        self.page.wait_for_selector(self.TIMER_DISPLAY, state="visible")
+
+    def get_time_remaining(self) -> int:
+        """Extract the time remaining from the timer display.
+
+        Returns:
+            The number of seconds remaining as an integer
+        """
+        text = self.page.locator(self.TIMER_DISPLAY).inner_text()
+        return int(text.strip())
+
+    def is_compete_button_disabled(self) -> bool:
+        """Check if the Compete button is disabled.
+
+        Returns:
+            True if the Compete button is disabled
+        """
+        return self.page.locator(self.COMPETE_BUTTON).is_disabled()
+
+    def is_compete_button_enabled(self) -> bool:
+        """Check if the Compete button is enabled.
+
+        Returns:
+            True if the Compete button is enabled
+        """
+        return self.page.locator(self.COMPETE_BUTTON).is_enabled()
+
+    def is_reset_button_disabled(self) -> bool:
+        """Check if the Reset button is disabled.
+
+        Returns:
+            True if the Reset button is disabled
+        """
+        return self.page.locator(self.RESET_BUTTON).is_disabled()
+
+    def is_reset_button_enabled(self) -> bool:
+        """Check if the Reset button is enabled.
+
+        Returns:
+            True if the Reset button is enabled
+        """
+        return self.page.locator(self.RESET_BUTTON).is_enabled()
+
+    def wait_for_competition_end(self, timeout: int = 45000) -> None:
+        """Wait for the competition to end and solution to appear.
+
+        Args:
+            timeout: Maximum time to wait in milliseconds (default: 45s)
+        """
+        self.page.wait_for_selector(
+            "text=/Solution found|No solution found/", timeout=timeout, state="visible"
+        )

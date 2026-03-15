@@ -1,6 +1,7 @@
 use crate::game::model::{Board, Game};
 use crate::solver::iterative_deepening::IterativeDeepeningSolver;
 use crate::solver::traits::{Operator, Solver};
+use gloo_timers::callback::Timeout;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -12,9 +13,27 @@ pub struct GameBoardProps {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SolutionState {
     NotAttempted,
+    Competing(u8), // seconds remaining: N → 0
     Solving,
     Solved(crate::solver::traits::Solution<Game, Board>),
     NotFound,
+}
+
+/// Read the compete timer duration from localStorage.
+///
+/// If the key `OPTS_DEV_FAST_COMPETE` is set to `"true"`, returns 2 seconds
+/// (for fast E2E testing). Otherwise returns the standard 30 seconds.
+fn get_compete_duration() -> u8 {
+    if let Some(window) = web_sys::window() {
+        if let Ok(Some(storage)) = window.local_storage() {
+            if let Ok(Some(val)) = storage.get_item("OPTS_DEV_FAST_COMPETE") {
+                if val == "true" {
+                    return 2;
+                }
+            }
+        }
+    }
+    30
 }
 
 #[component]
@@ -22,6 +41,56 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
     let solution_state = use_state(|| SolutionState::NotAttempted);
     let game = props.game.clone();
 
+    // --- Compete mode countdown effect ---
+    // Keyed on the full SolutionState so each tick (Competing(n) -> Competing(n-1))
+    // creates a fresh 1-second Timeout with up-to-date state, avoiding stale closures.
+    {
+        let solution_state = solution_state.clone();
+        let game = game.clone();
+        use_effect_with((*solution_state).clone(), move |state: &SolutionState| {
+            // Store an optional Timeout handle for cleanup.
+            // Only the countdown tick timeout needs cancellation on cleanup;
+            // the 0ms solve-trigger timeout is forgotten (fire-and-forget).
+            let mut cleanup_handle: Option<Timeout> = None;
+
+            if let SolutionState::Competing(n) = *state {
+                let solution_state = solution_state.clone();
+                if n > 0 {
+                    // Schedule the next tick in 1 second
+                    let timeout = Timeout::new(1_000, move || {
+                        solution_state.set(SolutionState::Competing(n - 1));
+                    });
+                    cleanup_handle = Some(timeout);
+                } else {
+                    // Timer reached 0: transition to Solving, then yield to the browser
+                    // event loop via a 0ms timeout so the "Solving..." UI actually renders
+                    // before the synchronous solver blocks the main thread.
+                    solution_state.set(SolutionState::Solving);
+                    let timeout = Timeout::new(0, move || {
+                        let solver = IterativeDeepeningSolver::new(&game);
+                        if let Some(solution) = solver.solve() {
+                            tracing::info!(
+                                "Compete: found solution for game {:?} in {} operations",
+                                game,
+                                solution.number_of_operations(),
+                            );
+                            solution_state.set(SolutionState::Solved(solution));
+                        } else {
+                            tracing::info!("Compete: no solution found for game {:?}", game);
+                            solution_state.set(SolutionState::NotFound);
+                        }
+                    });
+                    // Forget the 0ms timeout so it fires even after cleanup runs.
+                    timeout.forget();
+                }
+            }
+
+            // Single cleanup closure: drops the countdown timeout if one was set.
+            move || drop(cleanup_handle)
+        });
+    }
+
+    // --- Solve button click handler ---
     let on_solve_click = {
         let solution_state = solution_state.clone();
         let game = game.clone();
@@ -47,6 +116,22 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
         })
     };
 
+    // --- Compete button click handler ---
+    let on_compete_click = {
+        let solution_state = solution_state.clone();
+        Callback::from(move |_| {
+            let duration = get_compete_duration();
+            solution_state.set(SolutionState::Competing(duration));
+        })
+    };
+
+    // --- Disable logic ---
+    let is_not_attempted = *solution_state == SolutionState::NotAttempted;
+    let is_busy = matches!(
+        *solution_state,
+        SolutionState::Solving | SolutionState::Competing(_)
+    );
+
     html! {
         <div class="flex flex-col items-center gap-6 p-4">
             <section aria-label="Game board" class="w-full max-w-md">
@@ -65,12 +150,28 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                 </div>
             </section>
 
+            // Timer display (only visible during Competing state)
+            {
+                if let SolutionState::Competing(seconds) = *solution_state {
+                    html! {
+                        <div class="w-full max-w-md bg-yellow-100 border-2 border-yellow-500 rounded-lg p-4 text-center">
+                            <div class="text-yellow-800 font-semibold mb-1">{"Time remaining"}</div>
+                            <div class="text-5xl font-bold text-yellow-900" aria-label="Time remaining">
+                                { seconds }
+                            </div>
+                        </div>
+                    }
+                } else {
+                    html! {}
+                }
+            }
+
             <div class="flex flex-wrap gap-3 justify-center">
                 <button
                     class="bg-gray-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-600"
                     onclick={props.on_reset.clone()}
-                    disabled={*solution_state == SolutionState::Solving}
-                    aria-busy={(*solution_state == SolutionState::Solving).to_string()}
+                    disabled={is_busy}
+                    aria-busy={is_busy.to_string()}
                     aria-label="Start new game"
                 >
                     <span aria-hidden="true">{"↻"}</span>
@@ -80,11 +181,20 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                 <button
                     class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                     onclick={on_solve_click}
-                    disabled={*solution_state != SolutionState::NotAttempted}
-                    aria-busy={(*solution_state != SolutionState::NotAttempted).to_string()}
+                    disabled={!is_not_attempted}
+                    aria-busy={(!is_not_attempted).to_string()}
                     aria-label="Solve game"
                 >
                     { if *solution_state == SolutionState::Solving { "Solving..." } else { "Solve" } }
+                </button>
+
+                <button
+                    class="bg-orange-500 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-600"
+                    onclick={on_compete_click}
+                    disabled={!is_not_attempted}
+                    aria-label="Compete"
+                >
+                    {"Compete"}
                 </button>
             </div>
 

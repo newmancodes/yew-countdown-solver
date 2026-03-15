@@ -5,7 +5,13 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
-from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
+from playwright.sync_api import (
+    Browser,
+    BrowserContext,
+    Page,
+    Playwright,
+    sync_playwright,
+)
 
 
 # Environment variables with defaults
@@ -34,14 +40,23 @@ def browser(playwright: Playwright) -> Generator[Browser, None, None]:
 
 @pytest.fixture(scope="function")
 def context(browser: Browser) -> Generator[BrowserContext, None, None]:
-    """Provide a new browser context for each test."""
+    """Provide a new browser context for each test.
+
+    Injects the OPTS_DEV_FAST_COMPETE localStorage flag so the compete
+    timer runs for 2 seconds instead of 30, keeping E2E tests fast.
+    """
     context = browser.new_context()
+    context.add_init_script(
+        "window.localStorage.setItem('OPTS_DEV_FAST_COMPETE', 'true');"
+    )
     yield context
     context.close()
 
 
 @pytest.fixture(scope="function")
-def page(context: BrowserContext, request: pytest.FixtureRequest) -> Generator[Page, None, None]:
+def page(
+    context: BrowserContext, request: pytest.FixtureRequest
+) -> Generator[Page, None, None]:
     """Provide a new page for each test with automatic screenshot on failure."""
     page = context.new_page()
     page.goto(BASE_URL)
@@ -63,6 +78,7 @@ def page(context: BrowserContext, request: pytest.FixtureRequest) -> Generator[P
 def app_page(page: Page):
     """Provide an AppPage helper object for interacting with the app."""
     from pages.page_objects import AppPage
+
     return AppPage(page)
 
 
@@ -79,11 +95,11 @@ def pytest_runtest_makereport(item, call):
 
 def pytest_configure(config):
     """Display environment configuration at test startup."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"E2E Test Configuration")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"BASE_URL: {BASE_URL}")
     print(f"HEADLESS: {HEADLESS}")
     print(f"SOLVER_TIMEOUT: {SOLVER_TIMEOUT}ms")
     print(f"SCREENSHOT_DIR: {SCREENSHOT_DIR}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
