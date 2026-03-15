@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "Yew project that solves countdown numbers game"
 readme = "README.md"
-repository = "https://github.com/yewstack/yew-trunk-minimal-template"
+repository = "https://github.com/newmancodes/yew-countdown-solver"
 keywords = ["yew", "trunk"]
 categories = ["gui", "wasm", "web-programming"]
 
