@@ -82,8 +82,14 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
                     ));
                 }
 
-                // Division (larger / smaller, only when result is integer)
-                if left == right {
+                // Division (larger / smaller, only when result is integer).
+                // Guard: skip if either operand is zero. Currently unreachable
+                // because initial board numbers are all >= 1 and subtraction of
+                // equal operands is skipped above, but this protects against
+                // future changes that could introduce zero onto the board.
+                if left == 0 || right == 0 {
+                    // no valid division possible; skip
+                } else if left == right {
                     children.push((
                         BoardAdjuster::from(board)
                             .remove_number(left)
@@ -339,6 +345,102 @@ mod tests {
                 instruction.operation().is_some(),
                 "Non-initial instructions should have an operation"
             );
+        }
+    }
+
+    #[test]
+    fn generate_children_never_produces_a_board_containing_zero() {
+        // Exhaustively expand children up to depth 5 from several representative
+        // boards and assert that zero never appears on any resulting board.
+        let starting_boards = [
+            game!(999, 1, 1, 2, 2, 3, 3),      // all small, with duplicates
+            game!(999, 1, 2, 3, 4, 5, 6),      // all small, no duplicates
+            game!(999, 25, 50, 75, 100, 1, 2), // heavy large numbers
+            game!(999, 5, 5, 10, 10, 8, 8),    // paired duplicates
+        ];
+
+        for game in &starting_boards {
+            let mut frontier = vec![game.board().clone()];
+            let mut visited = HashSet::<Board>::new();
+
+            while let Some(board) = frontier.pop() {
+                if visited.contains(&board) {
+                    continue;
+                }
+                visited.insert(board.clone());
+
+                // The core assertion: no board should ever contain zero
+                assert!(
+                    !board.numbers().contains(&0),
+                    "Board {:?} contains zero, generated from game {:?}",
+                    board,
+                    game
+                );
+
+                // Only expand if the board has at least 2 numbers (needed for pairing)
+                if board.numbers().len() >= 2 {
+                    for (child_board, _operation) in
+                        IterativeDeepeningSolver::generate_children(&board)
+                    {
+                        if !visited.contains(&child_board) {
+                            frontier.push(child_board);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn generate_children_skips_division_when_board_contains_zero() {
+        // Synthetically construct a board with zero via BoardAdjuster to verify
+        // the defensive guard prevents any division operations involving zero.
+        let base_board = BoardBuilder::new()
+            .add_number(6)
+            .unwrap()
+            .add_number(3)
+            .unwrap()
+            .add_number(4)
+            .unwrap()
+            .add_number(5)
+            .unwrap()
+            .add_number(7)
+            .unwrap()
+            .add_number(8)
+            .unwrap()
+            .build()
+            .unwrap();
+
+        // Replace 8 with 0 to simulate a zero on the board
+        let board_with_zero = BoardAdjuster::from(&base_board)
+            .remove_number(8)
+            .add_number(0)
+            .build();
+
+        assert!(
+            board_with_zero.numbers().contains(&0),
+            "Test setup: board should contain zero"
+        );
+
+        let children = IterativeDeepeningSolver::generate_children(&board_with_zero);
+
+        // No child should have been produced by dividing by zero
+        for (_, operation) in &children {
+            if operation.operator == Operator::Divide {
+                assert!(
+                    operation.right != 0,
+                    "Division by zero should have been skipped, but found: {} / {} = {}",
+                    operation.left,
+                    operation.right,
+                    operation.result
+                );
+                assert!(
+                    operation.left != 0 || operation.right != 0,
+                    "Division involving zero should have been skipped: {} / {}",
+                    operation.left,
+                    operation.right
+                );
+            }
         }
     }
 }
