@@ -1,8 +1,9 @@
-use crate::game::model::{Board, Game};
-use crate::solver::iterative_deepening::IterativeDeepeningSolver;
-use crate::solver::traits::{Operator, Solver};
 use gloo_timers::callback::Timeout;
 use yew::prelude::*;
+use yew_countdown_solver::game::board::Board;
+use yew_countdown_solver::game::model::Game;
+use yew_countdown_solver::solver::iterative_deepening::IterativeDeepeningSolver;
+use yew_countdown_solver::solver::traits::{Instruction, Operator, Solver};
 
 #[derive(Properties, PartialEq)]
 pub struct GameBoardProps {
@@ -15,7 +16,7 @@ pub enum SolutionState {
     NotAttempted,
     Competing(u8), // seconds remaining: N → 0
     Solving,
-    Solved(crate::solver::traits::Solution<Game, Board>),
+    Solved(yew_countdown_solver::solver::traits::Solution<Game, Board>),
     NotFound,
 }
 
@@ -201,7 +202,7 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                                 <span>{format!("Solution found in {} operations!", solution.number_of_operations())}</span>
                             </div>
                             <ol class="space-y-3 text-sm text-green-700" role="list" aria-label="Solution instructions">
-                                { for solution.instructions().iter().enumerate().filter_map(|(i, instruction)| {
+                                { for solution.instructions().iter().enumerate().filter_map(|(i, instruction): (usize, &Instruction<Board>)| {
                                     instruction.operation().map(|op| {
                                         let symbol = match op.operator {
                                             Operator::Add      => "+",

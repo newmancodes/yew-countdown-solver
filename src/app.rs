@@ -1,6 +1,6 @@
 use crate::components::{GameBoard, GameProvider};
-use crate::game::model::Game;
 use yew::prelude::*;
+use yew_countdown_solver::game::model::Game;
 
 #[component]
 pub fn App() -> Html {

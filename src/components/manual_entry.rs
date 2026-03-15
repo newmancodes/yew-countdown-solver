@@ -1,7 +1,7 @@
-use crate::game::board::BoardBuilder;
-use crate::game::model::Game;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
+use yew_countdown_solver::game::board::BoardBuilder;
+use yew_countdown_solver::game::model::Game;
 
 #[derive(Clone, Default)]
 struct ManualEntryState {

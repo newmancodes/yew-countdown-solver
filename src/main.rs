@@ -1,7 +1,5 @@
 mod app;
 mod components;
-mod game;
-mod solver;
 
 use app::App;
 use tracing_subscriber::{filter::Targets, prelude::*};

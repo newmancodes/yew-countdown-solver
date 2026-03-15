@@ -1,8 +1,8 @@
 use crate::components::ManualEntry;
-use crate::game::board::Board;
-use crate::game::model::Game;
 use rand::Rng;
 use yew::prelude::*;
+use yew_countdown_solver::game::board::Board;
+use yew_countdown_solver::game::model::Game;
 
 #[derive(Properties, PartialEq)]
 pub struct GameProviderProps {
