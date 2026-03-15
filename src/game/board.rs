@@ -83,11 +83,11 @@ impl BoardBuilder {
     }
 
     pub fn add_number(mut self, number: u8) -> Result<Self, BoardError> {
-        if !self.is_valid_number(number) {
+        if !Self::is_valid_number(number) {
             return Err(BoardError::InvalidNumber(number));
         }
 
-        if self.is_small_number(number) {
+        if Self::is_small_number(number) {
             if self.count_number_usage(number) >= 2 {
                 return Err(BoardError::SmallNumberUsedTooManyTimes(number));
             }
@@ -120,12 +120,12 @@ impl BoardBuilder {
         })
     }
 
-    fn is_valid_number(&self, number: u8) -> bool {
+    fn is_valid_number(number: u8) -> bool {
         const ALLOWED: &[u8] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 75, 100];
         ALLOWED.contains(&number)
     }
 
-    fn is_small_number(&self, number: u8) -> bool {
+    fn is_small_number(number: u8) -> bool {
         Board::SMALL_NUMBERS.contains(&number)
     }
 
