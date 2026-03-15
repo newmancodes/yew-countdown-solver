@@ -173,10 +173,9 @@ impl BoardAdjuster {
         BoardAdjuster { numbers }
     }
 
-    pub fn add_number(self, number: u32) -> Self {
-        BoardAdjuster {
-            numbers: [self.numbers, vec![number]].concat(),
-        }
+    pub fn add_number(mut self, number: u32) -> Self {
+        self.numbers.push(number);
+        self
     }
 
     pub fn build(self) -> Board {
