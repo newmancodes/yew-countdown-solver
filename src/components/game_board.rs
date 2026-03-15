@@ -41,9 +41,12 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
     let solution_state = use_state(|| SolutionState::NotAttempted);
     let game = props.game.clone();
 
-    // --- Compete mode countdown effect ---
+    // --- State-driven effect for countdown ticks and deferred solving ---
     // Keyed on the full SolutionState so each tick (Competing(n) -> Competing(n-1))
     // creates a fresh 1-second Timeout with up-to-date state, avoiding stale closures.
+    // Also handles the Solving state: yields to the browser event loop via a 0ms
+    // timeout so the "Solving..." UI actually renders before the synchronous solver
+    // blocks the main thread. Both Solve and Compete converge here.
     {
         let solution_state = solution_state.clone();
         let game = game.clone();
@@ -53,36 +56,43 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
             // the 0ms solve-trigger timeout is forgotten (fire-and-forget).
             let mut cleanup_handle: Option<Timeout> = None;
 
-            if let SolutionState::Competing(n) = *state {
-                let solution_state = solution_state.clone();
-                if n > 0 {
-                    // Schedule the next tick in 1 second
-                    let timeout = Timeout::new(1_000, move || {
-                        solution_state.set(SolutionState::Competing(n - 1));
-                    });
-                    cleanup_handle = Some(timeout);
-                } else {
-                    // Timer reached 0: transition to Solving, then yield to the browser
-                    // event loop via a 0ms timeout so the "Solving..." UI actually renders
-                    // before the synchronous solver blocks the main thread.
-                    solution_state.set(SolutionState::Solving);
+            match *state {
+                SolutionState::Competing(n) => {
+                    let solution_state = solution_state.clone();
+                    if n > 0 {
+                        // Schedule the next tick in 1 second
+                        let timeout = Timeout::new(1_000, move || {
+                            solution_state.set(SolutionState::Competing(n - 1));
+                        });
+                        cleanup_handle = Some(timeout);
+                    } else {
+                        // Timer reached 0: transition to Solving
+                        solution_state.set(SolutionState::Solving);
+                    }
+                }
+                SolutionState::Solving => {
+                    // Yield to the browser event loop via a 0ms timeout so the
+                    // "Solving..." UI renders before the solver blocks the thread.
+                    let solution_state = solution_state.clone();
+                    let game = game.clone();
                     let timeout = Timeout::new(0, move || {
                         let solver = IterativeDeepeningSolver::new(&game);
                         if let Some(solution) = solver.solve() {
                             tracing::info!(
-                                "Compete: found solution for game {:?} in {} operations",
+                                "Found solution for game {:?} in {} operations",
                                 game,
                                 solution.number_of_operations(),
                             );
                             solution_state.set(SolutionState::Solved(solution));
                         } else {
-                            tracing::info!("Compete: no solution found for game {:?}", game);
+                            tracing::info!("No solution found for game {:?}", game);
                             solution_state.set(SolutionState::NotFound);
                         }
                     });
-                    // Forget the 0ms timeout so it fires even after cleanup runs.
+                    // Forget so it fires even after cleanup runs.
                     timeout.forget();
                 }
+                _ => {}
             }
 
             // Single cleanup closure: drops the countdown timeout if one was set.
@@ -91,28 +101,12 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
     }
 
     // --- Solve button click handler ---
+    // Just transitions to Solving state; the effect above handles the actual work.
     let on_solve_click = {
         let solution_state = solution_state.clone();
-        let game = game.clone();
 
         Callback::from(move |_| {
-            let solution_state = solution_state.clone();
-            let game = game.clone();
-
             solution_state.set(SolutionState::Solving);
-
-            let solver = IterativeDeepeningSolver::new(&game);
-            if let Some(solution) = solver.solve() {
-                tracing::info!(
-                    "Found solution for game {:?} in {} operations",
-                    game,
-                    solution.number_of_operations(),
-                );
-                solution_state.set(SolutionState::Solved(solution));
-            } else {
-                tracing::info!("No solution found for game {:?}", game);
-                solution_state.set(SolutionState::NotFound);
-            }
         })
     };
 
