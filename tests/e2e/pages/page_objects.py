@@ -169,8 +169,8 @@ class AppPage:
             return None
 
         message = self.get_solution_message()
-        # Extract number from "Solution found in X.Xs with N operations!"
-        match = re.search(r"Solution found in [\d.]+s with (\d+) operations?", message)
+        # Extract number from "Solution found in X.Xms with N operations!"
+        match = re.search(r"Solution found in [\d.]+ms with (\d+) operations?", message)
         if match:
             return int(match.group(1))
         else:

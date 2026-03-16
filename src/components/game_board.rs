@@ -18,7 +18,7 @@ pub enum SolutionState {
     Solving,
     Solved {
         solution: yew_countdown_solver::solver::traits::Solution<Game, Board>,
-        elapsed_secs: f64,
+        elapsed_ms: f64,
     },
     NotFound,
 }
@@ -85,19 +85,19 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
 
                         let solver = IterativeDeepeningSolver::new(&game);
                         if let Some(solution) = solver.solve() {
-                            let elapsed_secs = match (start, performance.as_ref()) {
-                                (Some(s), Some(p)) => (p.now() - s) / 1000.0,
+                            let elapsed_ms = match (start, performance.as_ref()) {
+                                (Some(s), Some(p)) => p.now() - s,
                                 _ => 0.0,
                             };
                             tracing::info!(
-                                "Found solution for game {:?} in {} operations ({:.1}s)",
+                                "Found solution for game {:?} in {} operations ({:.1}ms)",
                                 game,
                                 solution.number_of_operations(),
-                                elapsed_secs,
+                                elapsed_ms,
                             );
                             solution_state.set(SolutionState::Solved {
                                 solution,
-                                elapsed_secs,
+                                elapsed_ms,
                             });
                         } else {
                             tracing::info!("No solution found for game {:?}", game);
@@ -209,11 +209,11 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
 
             {
                 match *solution_state {
-                    SolutionState::Solved { ref solution, elapsed_secs } => html! {
+                    SolutionState::Solved { ref solution, elapsed_ms } => html! {
                         <div class="w-full max-w-md bg-green-100 border-2 border-green-500 rounded-lg p-4">
                             <div class="flex items-center gap-2 text-green-800 font-semibold mb-2">
                                 <span aria-hidden="true" class="text-2xl">{"✓"}</span>
-                                <span>{format!("Solution found in {:.1}s with {} operations!", elapsed_secs, solution.number_of_operations())}</span>
+                                <span>{format!("Solution found in {:.1}ms with {} operations!", elapsed_ms, solution.number_of_operations())}</span>
                             </div>
                             <ol class="space-y-3 text-sm text-green-700" role="list" aria-label="Solution instructions">
                                 { for solution.instructions().iter().enumerate().filter_map(|(i, instruction): (usize, &Instruction<Board>)| {
