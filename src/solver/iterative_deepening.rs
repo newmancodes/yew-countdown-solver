@@ -4,6 +4,7 @@ use crate::game::board::{Board, BoardAdjuster};
 use crate::game::model::Game;
 use crate::solver::traits::{Instruction, Operation, Operator, Problem, Solution, Solver};
 use std::collections::HashSet;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct IterativeDeepeningSolver<'a, T> {
@@ -196,6 +197,7 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                     return Some(Solution::new(self.initial_state.clone(), instructions));
                 }
 
+                let candidate = Rc::new(candidate);
                 for (child_candidate, operation) in Self::generate_children(candidate.state()) {
                     if self.calculate_child_depth(&child_candidate) < depth_limit
                         && !explored.contains(&child_candidate)
@@ -204,7 +206,7 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                             .any(|traversal| traversal.state() == &child_candidate)
                     {
                         frontier.push(StateTraversal::intermediate_state(
-                            candidate.clone(),
+                            Rc::clone(&candidate),
                             child_candidate,
                             operation,
                         ));
@@ -219,9 +221,9 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 struct StateTraversal<S> {
-    previous_state: Option<Box<StateTraversal<S>>>,
+    previous_state: Option<Rc<StateTraversal<S>>>,
     state: S,
     operation: Option<Operation>,
 }
@@ -236,12 +238,12 @@ impl<S> StateTraversal<S> {
     }
 
     pub fn intermediate_state(
-        previous_state: StateTraversal<S>,
+        previous_state: Rc<StateTraversal<S>>,
         state: S,
         operation: Operation,
     ) -> Self {
         Self {
-            previous_state: Some(Box::new(previous_state)),
+            previous_state: Some(previous_state),
             state,
             operation: Some(operation),
         }
