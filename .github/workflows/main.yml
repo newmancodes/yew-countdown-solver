@@ -66,7 +66,7 @@ jobs:
 
       - name: Upload Code Coverage Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: code-coverage-report
           path: target/llvm-cov/html/
@@ -90,7 +90,7 @@ jobs:
 
       - name: Upload E2E Screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-screenshots
           path: tests/e2e/screenshots/
