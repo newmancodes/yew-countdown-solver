@@ -26,7 +26,8 @@ jobs:
       - name: Configure WASM tooling
         run: |
           rustup target add wasm32-unknown-unknown
-          cargo install trunk wasm-bindgen-cli
+          rustup component add llvm-tools-preview
+          cargo install trunk wasm-bindgen-cli cargo-llvm-cov
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -60,8 +61,16 @@ jobs:
       - name: Quality - Code Formatting
         run: cargo fmt --check
 
-      - name: Quality - Unit Tests
-        run: cargo test
+      - name: Quality - Unit Tests with Coverage
+        run: cargo llvm-cov --html
+
+      - name: Upload Code Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: target/llvm-cov/html/
+          retention-days: 30
 
       - name: Build Application
         run: |
