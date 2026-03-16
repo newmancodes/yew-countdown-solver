@@ -177,23 +177,14 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                 {
                     // A solution has the start, intermediate and end states in order
                     let mut instructions = Vec::with_capacity(depth_limit + 2);
-                    if let Some(op) = candidate.operation.clone() {
-                        instructions
-                            .push(Instruction::with_operation(candidate.state().clone(), op));
-                    } else {
-                        instructions.push(Instruction::new(candidate.state().clone()));
-                    }
-                    let mut previous_state = candidate.previous_state();
-                    while let Some(visited_state) = previous_state {
-                        if let Some(op) = visited_state.operation.clone() {
-                            instructions.push(Instruction::with_operation(
-                                visited_state.state().clone(),
-                                op,
-                            ));
-                        } else {
-                            instructions.push(Instruction::new(visited_state.state().clone()));
-                        }
-                        previous_state = visited_state.previous_state();
+                    let mut current: Option<&StateTraversal<'_, Board>> = Some(candidate);
+                    while let Some(traversal) = current {
+                        let instruction = match traversal.operation.clone() {
+                            Some(op) => Instruction::with_operation(traversal.state().clone(), op),
+                            None => Instruction::new(traversal.state().clone()),
+                        };
+                        instructions.push(instruction);
+                        current = traversal.previous_state();
                     }
                     instructions.reverse();
                     return Some(Solution::new(self.initial_state.clone(), instructions));
