@@ -15,11 +15,14 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+base_url = "http://localhost:8080"
 addopts = [
     "-v",
     "--tb=short",
     "--strict-markers",
     "--disable-warnings",
+    "--screenshot=only-on-failure",
+    "--output=screenshots",
 ]
 log_cli = true
 log_cli_level = "INFO"

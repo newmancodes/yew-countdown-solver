@@ -38,10 +38,10 @@ cd tests/e2e && uv sync
 uv run playwright install chromium --with-deps
 
 # Run all E2E tests (requires a running server on port 8080)
-cd tests/e2e && BASE_URL=http://localhost:8080 uv run pytest tests/ --verbose
+cd tests/e2e && uv run pytest tests/
 
 # Run a single E2E test file
-cd tests/e2e && BASE_URL=http://localhost:8080 uv run pytest tests/test_solver.py --verbose
+cd tests/e2e && uv run pytest tests/test_solver.py
 ```
 
 Start the server for E2E tests with: `python3 -m http.server 8080 --directory ./dist`
