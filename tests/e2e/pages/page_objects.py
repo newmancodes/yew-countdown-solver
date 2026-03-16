@@ -1,7 +1,6 @@
 """Page Object Model for the Countdown Solver app."""
 
 import re
-from typing import List, Optional
 
 from playwright.sync_api import Page, expect
 
@@ -34,7 +33,7 @@ class AppPage:
         return f'button[aria-label="Select {n} large number(s)"]'
 
     @staticmethod
-    def large_numbers_in(numbers: List[int]) -> List[int]:
+    def large_numbers_in(numbers: list[int]) -> list[int]:
         return [n for n in numbers if n in {25, 50, 75, 100}]
 
     def __init__(self, page: Page):
@@ -67,7 +66,7 @@ class AppPage:
         # Wait for navigation to game board
         self.page.wait_for_selector(self.GAME_BOARD, state="visible")
 
-    def click_solve(self, timeout: Optional[int] = None) -> None:
+    def click_solve(self, timeout: int | None = None) -> None:
         """Click the Solve button.
 
         Args:
@@ -103,7 +102,7 @@ class AppPage:
         except ValueError:
             raise ValueError(f"Could not parse target number: {target_text}")
 
-    def get_available_numbers(self) -> List[int]:
+    def get_available_numbers(self) -> list[int]:
         """Extract the list of available numbers from the game board.
 
         Returns:
@@ -157,7 +156,7 @@ class AppPage:
         """
         return self.page.locator("text=No solution found").is_visible()
 
-    def get_instruction_count(self) -> Optional[int]:
+    def get_instruction_count(self) -> int | None:
         """Extract the instruction count from a success message.
 
         Returns:
@@ -258,7 +257,7 @@ class AppPage:
         """Check if the Confirm Game button is enabled."""
         return self.page.locator(self.CONFIRM_GAME_BUTTON).is_enabled()
 
-    def select_numbers(self, numbers: List[int]) -> None:
+    def select_numbers(self, numbers: list[int]) -> None:
         """Click the number button for each number in the list."""
         for n in numbers:
             self.click_number(n)
