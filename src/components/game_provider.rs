@@ -71,7 +71,7 @@ pub fn GameProvider(props: &GameProviderProps) -> Html {
                                         onclick={Callback::from(move |_: MouseEvent| {
                                             let board = Board::random_with_number_mix_specified(small_count, large_count).unwrap();
                                             let mut rng = rand::rng();
-                                            let target = rng.random_range(1u16..=999u16);
+                                            let target = rng.random_range(1u32..=999u32);
                                             let game = Game::new(board, target).unwrap();
                                             on_game_specified.emit(game);
                                         })}

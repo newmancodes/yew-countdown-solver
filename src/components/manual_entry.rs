@@ -5,7 +5,7 @@ use yew_countdown_solver::game::model::Game;
 
 #[derive(Clone, Default)]
 struct ManualEntryState {
-    selected: Vec<u8>,
+    selected: Vec<u32>,
     target_str: String,
 }
 
@@ -25,9 +25,9 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
         .try_fold(BoardBuilder::new(), |builder, &n| builder.add_number(n))
         .and_then(|builder| builder.build());
 
-    let target: Option<u16> = state
+    let target: Option<u32> = state
         .target_str
-        .parse::<u16>()
+        .parse::<u32>()
         .ok()
         .filter(|&t| (1..=999).contains(&t));
 
@@ -60,9 +60,9 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                 .iter()
                 .try_fold(BoardBuilder::new(), |builder, &n| builder.add_number(n))
                 .and_then(|builder| builder.build());
-            let target: Option<u16> = state
+            let target: Option<u32> = state
                 .target_str
-                .parse::<u16>()
+                .parse::<u32>()
                 .ok()
                 .filter(|&t| (1..=999).contains(&t));
             if let (Ok(board), Some(target)) = (board, target) {
@@ -97,7 +97,7 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                 <div class="flex flex-col items-center gap-2 w-full">
                     <p class="text-sm font-semibold text-gray-600">{"Large numbers — select up to 1 of each"}</p>
                     <div class="flex flex-wrap gap-3 justify-center">
-                        { for [25u8, 50, 75, 100].into_iter().map(|n| {
+                        { for [25u32, 50, 75, 100].into_iter().map(|n| {
                             let count = state.selected.iter().filter(|&&x| x == n).count();
                             let can_add = state.selected.len() < 6 && count < 1;
                             let state_clone = state.clone();
@@ -121,7 +121,7 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                 <div class="flex flex-col items-center gap-2 w-full">
                     <p class="text-sm font-semibold text-gray-600">{"Small numbers — select up to 2 of each"}</p>
                     <div class="flex flex-wrap gap-2 justify-center">
-                        { for (1u8..=10).map(|n| {
+                        { for (1u32..=10).map(|n| {
                             let count = state.selected.iter().filter(|&&x| x == n).count();
                             let can_add = state.selected.len() < 6 && count < 2;
                             let state_clone = state.clone();

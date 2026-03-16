@@ -5,10 +5,10 @@ use yew_countdown_solver::solver::iterative_deepening::IterativeDeepeningSolver;
 use yew_countdown_solver::solver::traits::Solver;
 
 /// Helper to build a Game from a target and a slice of numbers.
-fn make_game(target: u16, numbers: &[u32]) -> Game {
+fn make_game(target: u32, numbers: &[u32]) -> Game {
     let mut builder = BoardBuilder::new();
     for &n in numbers {
-        builder = builder.add_number(n as u8).unwrap();
+        builder = builder.add_number(n).unwrap();
     }
     let board = builder.build().unwrap();
     Game::new(board, target).unwrap()

@@ -8,8 +8,8 @@ pub struct Board {
 }
 
 impl Board {
-    const SMALL_NUMBERS: &[u8] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const LARGE_NUMBERS: &[u8] = &[25, 50, 75, 100];
+    const SMALL_NUMBERS: &[u32] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const LARGE_NUMBERS: &[u32] = &[25, 50, 75, 100];
 
     pub fn numbers(&self) -> &[u32] {
         &self.numbers
@@ -45,7 +45,7 @@ impl Board {
         available_small_numbers.shuffle(&mut rng);
 
         for _ in 0..small_number_count {
-            let index = rng.random_range(0..available_small_numbers.len() as u8) as usize;
+            let index = rng.random_range(0..available_small_numbers.len());
             let selected_small_number = available_small_numbers.remove(index);
 
             board_builder = board_builder.add_number(selected_small_number)?;
@@ -54,7 +54,7 @@ impl Board {
         let mut available_large_numbers = Board::LARGE_NUMBERS.to_vec();
 
         for _ in 0..large_number_count {
-            let index = rng.random_range(0..available_large_numbers.len() as u8) as usize;
+            let index = rng.random_range(0..available_large_numbers.len());
             let selected_large_number = available_large_numbers.remove(index);
 
             board_builder = board_builder.add_number(selected_large_number)?;
@@ -66,7 +66,7 @@ impl Board {
 
 #[derive(Debug)]
 pub struct BoardBuilder {
-    numbers: Vec<u8>,
+    numbers: Vec<u32>,
 }
 
 impl Default for BoardBuilder {
@@ -82,7 +82,7 @@ impl BoardBuilder {
         }
     }
 
-    pub fn add_number(mut self, number: u8) -> Result<Self, BoardError> {
+    pub fn add_number(mut self, number: u32) -> Result<Self, BoardError> {
         if !Self::is_valid_number(number) {
             return Err(BoardError::InvalidNumber(number));
         }
@@ -112,24 +112,20 @@ impl BoardBuilder {
         self.numbers.sort_unstable();
 
         Ok(Board {
-            numbers: self
-                .numbers
-                .into_iter()
-                .map(|n| n as u32)
-                .collect::<Vec<_>>(),
+            numbers: self.numbers,
         })
     }
 
-    fn is_valid_number(number: u8) -> bool {
-        const ALLOWED: &[u8] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 75, 100];
+    fn is_valid_number(number: u32) -> bool {
+        const ALLOWED: &[u32] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 75, 100];
         ALLOWED.contains(&number)
     }
 
-    fn is_small_number(number: u8) -> bool {
+    fn is_small_number(number: u32) -> bool {
         Board::SMALL_NUMBERS.contains(&number)
     }
 
-    fn count_number_usage(&self, number: u8) -> usize {
+    fn count_number_usage(&self, number: u32) -> usize {
         self.numbers.iter().filter(|&&n| n == number).count()
     }
 }
@@ -137,13 +133,13 @@ impl BoardBuilder {
 #[derive(Error, Debug)]
 pub enum BoardError {
     #[error("Invalid number: {0}. Only 1-10, 25, 50, 75, and 100 are allowed")]
-    InvalidNumber(u8),
+    InvalidNumber(u32),
 
     #[error("Large number {0} can only be used once")]
-    LargeNumberAlreadyUsed(u8),
+    LargeNumberAlreadyUsed(u32),
 
     #[error("Number {0} can only be used twice")]
-    SmallNumberUsedTooManyTimes(u8),
+    SmallNumberUsedTooManyTimes(u32),
 
     #[error("Board is underpopulated")]
     UnderpopulatedBoard,
@@ -191,7 +187,7 @@ mod tests {
 
     #[test]
     fn numbers_which_do_not_exist_on_the_game_cards_are_not_allowed() {
-        let disallowed_numbers: Vec<u8> = (0..=255)
+        let disallowed_numbers: Vec<u32> = (0..=255)
             .filter(|&n| !((1..=10).contains(&n) || matches!(n, 25 | 50 | 75 | 100)))
             .collect();
 
@@ -216,7 +212,7 @@ mod tests {
 
     #[test]
     fn small_numbers_can_be_reused_twice() -> Result<(), BoardError> {
-        let small_numbers: Vec<u8> = (1..=10).collect();
+        let small_numbers: Vec<u32> = (1..=10).collect();
 
         for number in small_numbers {
             let board = BoardBuilder::new()
@@ -427,13 +423,13 @@ mod tests {
             let actual_small_number_count = board
                 .numbers()
                 .iter()
-                .filter(|&&n| Board::SMALL_NUMBERS.contains(&(n as u8)))
+                .filter(|n| Board::SMALL_NUMBERS.contains(n))
                 .count();
 
             let actual_large_number_count = board
                 .numbers()
                 .iter()
-                .filter(|&&n| Board::LARGE_NUMBERS.contains(&(n as u8)))
+                .filter(|n| Board::LARGE_NUMBERS.contains(n))
                 .count();
 
             assert_eq!(

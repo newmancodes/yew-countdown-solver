@@ -6,11 +6,11 @@ use thiserror::Error;
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Game {
     board: Board,
-    target: u16,
+    target: u32,
 }
 
 impl Game {
-    pub fn new(board: Board, target: u16) -> Result<Self, GameError> {
+    pub fn new(board: Board, target: u32) -> Result<Self, GameError> {
         if !(1..=999).contains(&target) {
             return Err(GameError::InvalidTarget(target));
         }
@@ -22,7 +22,7 @@ impl Game {
         &self.board
     }
 
-    pub fn target(&self) -> u16 {
+    pub fn target(&self) -> u32 {
         self.target
     }
 }
@@ -36,14 +36,14 @@ impl Default for Game {
 
 impl Problem for Game {
     fn is_solved(&self) -> bool {
-        self.board.numbers().contains(&(self.target as u32))
+        self.board.numbers().contains(&self.target)
     }
 }
 
 #[derive(Error, Debug)]
 pub enum GameError {
     #[error("Invalid target: {0}. Only 1-999 is allowed")]
-    InvalidTarget(u16),
+    InvalidTarget(u32),
 }
 
 #[cfg(test)]
@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn target_must_be_between_1_and_999_inclusive() -> Result<(), GameError> {
-        let targets: Vec<u16> = [vec![0u16], (1000u16..=u16::MAX).collect()].concat();
+        let targets: Vec<u32> = [vec![0u32], (1000u32..=1010u32).collect()].concat();
 
         for target in targets {
             let board = Board::random();

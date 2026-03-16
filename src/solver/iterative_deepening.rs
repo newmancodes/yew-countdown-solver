@@ -170,7 +170,7 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                 if candidate
                     .state()
                     .numbers()
-                    .contains(&(self.initial_state.target() as u32))
+                    .contains(&self.initial_state.target())
                 {
                     // A solution has the start, intermediate and end states in order
                     let mut instructions = Vec::with_capacity(depth_limit + 2);
