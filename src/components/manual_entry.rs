@@ -1,12 +1,48 @@
+use std::rc::Rc;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_countdown_solver::game::board::BoardBuilder;
 use yew_countdown_solver::game::model::Game;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq)]
 struct ManualEntryState {
     selected: Vec<u32>,
     target_str: String,
+}
+
+enum ManualEntryAction {
+    AddNumber(u32),
+    RemoveNumber(usize),
+    SetTarget(String),
+}
+
+impl Reducible for ManualEntryState {
+    type Action = ManualEntryAction;
+
+    fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
+        match action {
+            ManualEntryAction::AddNumber(n) => {
+                let mut selected = self.selected.clone();
+                selected.push(n);
+                Rc::new(ManualEntryState {
+                    selected,
+                    target_str: self.target_str.clone(),
+                })
+            }
+            ManualEntryAction::RemoveNumber(i) => {
+                let mut selected = self.selected.clone();
+                selected.remove(i);
+                Rc::new(ManualEntryState {
+                    selected,
+                    target_str: self.target_str.clone(),
+                })
+            }
+            ManualEntryAction::SetTarget(target_str) => Rc::new(ManualEntryState {
+                selected: self.selected.clone(),
+                target_str,
+            }),
+        }
+    }
 }
 
 #[derive(Properties, PartialEq)]
@@ -17,7 +53,7 @@ pub struct ManualEntryProps {
 
 #[component]
 pub fn ManualEntry(props: &ManualEntryProps) -> Html {
-    let state = use_state(ManualEntryState::default);
+    let state = use_reducer(ManualEntryState::default);
 
     let board_result = state
         .selected
@@ -42,12 +78,10 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
     let can_confirm = board_result.is_ok() && target.is_some();
 
     let on_target_input = {
-        let state = state.clone();
+        let state = state.dispatcher();
         Callback::from(move |e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            let mut new_state = (*state).clone();
-            new_state.target_str = input.value();
-            state.set(new_state);
+            state.dispatch(ManualEntryAction::SetTarget(input.value()));
         })
     };
 
@@ -100,16 +134,14 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                         { for [25u32, 50, 75, 100].into_iter().map(|n| {
                             let count = state.selected.iter().filter(|&&x| x == n).count();
                             let can_add = state.selected.len() < 6 && count < 1;
-                            let state_clone = state.clone();
+                            let dispatch = state.dispatcher();
                             html! {
                                 <button
                                     class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                                     aria-label={format!("number {}", n)}
                                     disabled={!can_add}
                                     onclick={Callback::from(move |_: MouseEvent| {
-                                        let mut new_state = (*state_clone).clone();
-                                        new_state.selected.push(n);
-                                        state_clone.set(new_state);
+                                        dispatch.dispatch(ManualEntryAction::AddNumber(n));
                                     })}
                                 >
                                     {n}
@@ -124,16 +156,14 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                         { for (1u32..=10).map(|n| {
                             let count = state.selected.iter().filter(|&&x| x == n).count();
                             let can_add = state.selected.len() < 6 && count < 2;
-                            let state_clone = state.clone();
+                            let dispatch = state.dispatcher();
                             html! {
                                 <button
                                     class="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                                     aria-label={format!("number {}", n)}
                                     disabled={!can_add}
                                     onclick={Callback::from(move |_: MouseEvent| {
-                                        let mut new_state = (*state_clone).clone();
-                                        new_state.selected.push(n);
-                                        state_clone.set(new_state);
+                                        dispatch.dispatch(ManualEntryAction::AddNumber(n));
                                     })}
                                 >
                                     {n}
@@ -148,15 +178,13 @@ pub fn ManualEntry(props: &ManualEntryProps) -> Html {
                 { for (0..6usize).map(|i| {
                     if i < state.selected.len() {
                         let n = state.selected[i];
-                        let state_clone = state.clone();
+                        let dispatch = state.dispatcher();
                         html! {
                             <button
                                 class="bg-white text-black text-xl font-semibold flex items-center justify-center py-4 px-2 border-2 border-gray-400 rounded-lg hover:bg-red-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                                 aria-label={format!("remove {}", n)}
                                 onclick={Callback::from(move |_: MouseEvent| {
-                                    let mut new_state = (*state_clone).clone();
-                                    new_state.selected.remove(i);
-                                    state_clone.set(new_state);
+                                    dispatch.dispatch(ManualEntryAction::RemoveNumber(i));
                                 })}
                             >
                                 {n}
