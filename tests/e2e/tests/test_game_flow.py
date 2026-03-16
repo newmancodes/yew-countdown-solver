@@ -22,9 +22,9 @@ def test_random_game_generation(app_page: AppPage):
     # Validate all game board elements are visible
     app_page.validate_game_board()
 
-    # Validate target number is in valid range (1-1000)
+    # Validate target number is in valid range (1-999)
     target = app_page.get_target_number()
-    assert 1 <= target <= 1000, f"Target {target} should be between 1 and 1000"
+    assert 1 <= target <= 999, f"Target {target} should be between 1 and 999"
 
     # Validate exactly 6 numbers are displayed
     numbers = app_page.get_available_numbers()
@@ -58,7 +58,7 @@ def test_multiple_random_games(app_page: AppPage):
         # Validate game
         target = app_page.get_target_number()
         numbers = app_page.get_available_numbers()
-        assert 1 <= target < 1000, f"Game {i+1} target should be valid"
+        assert 1 <= target <= 999, f"Game {i+1} target should be valid"
         assert len(numbers) == 6, f"Game {i+1} should have 6 numbers"
 
         # Reset for next iteration
