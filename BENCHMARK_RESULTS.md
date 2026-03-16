@@ -67,6 +67,40 @@ Replace `Box<StateTraversal<S>>` with `Rc<StateTraversal<S>>`. The popped candid
 | 5-step | 353,637 | 22,649,324 | 22,648,896 | -25% |
 | impossible | 122,589 | 8,403,592 | 8,403,592 | -17% |
 
+## Approach 3: Arena (typed-arena) -- Winner
+
+Replace individual heap allocations with a per-depth-iteration `typed_arena::Arena`. All `StateTraversal` nodes are bump-allocated into the arena; children reference parents via `&'arena StateTraversal` borrows. The entire arena is freed in one shot when the depth iteration ends.
+
+### Timing
+
+| Case | Time | vs Baseline | vs Rc |
+|------|------|-------------|-------|
+| 1-step | ~38 us | -3% | ~0% |
+| 2-step | ~482 us | -5% | -2% |
+| 3-step | ~1.02 ms | -7% | -1% |
+| 4-step | ~4.79 ms | -16% | -2% |
+| 5-step | ~18.5 ms | -24% | -2% |
+| impossible | ~6.9 ms | -17% | -2% |
+
+### Allocations (per solve)
+
+| Case | Allocs | Bytes allocated | Bytes freed | Alloc change vs Baseline |
+|------|--------|-----------------|-------------|--------------------------|
+| 1-step | 780 | 70,540 | 70,312 | -10% |
+| 2-step | 10,098 | 809,080 | 808,796 | -13% |
+| 3-step | 20,407 | 1,600,264 | 1,599,928 | -22% |
+| 4-step | 87,871 | 6,542,836 | 6,542,452 | -35% |
+| 5-step | 313,503 | 22,701,036 | 22,700,608 | -49% |
+| impossible | 111,762 | 8,367,144 | 8,367,144 | -40% |
+
 ### Analysis
 
-The Rc approach eliminates all deep cloning of parent chains. Improvements scale with search depth because deeper searches mean more children sharing longer parent chains. The 5-step case benefits most: 22% faster with 25% fewer allocations. The trade-off is a small per-node overhead for the reference count, which is negligible compared to the cloning savings.
+The arena approach wins on both timing and allocations. Key observations:
+
+1. **Allocation count reduction scales dramatically with depth** — at 5-step depth, arena uses 49% fewer allocations than baseline. This is because the arena batches many small allocations into large chunks, and individual `StateTraversal` nodes no longer need their own heap allocation for the parent pointer.
+
+2. **Timing improvement over Rc is modest (~2%)** — the main win (eliminating deep cloning) was already captured by Rc. The arena's additional advantage comes from cheaper allocation (bump pointer vs `malloc`) and cheaper deallocation (bulk free vs individual `drop`).
+
+3. **Bytes allocated is slightly higher than Rc for some cases** — the arena pre-allocates chunks, so there is some unused capacity within each chunk. This is a space-time trade-off: slightly more memory reserved, but faster allocation and deallocation.
+
+4. **Code complexity is comparable to Rc** — the arena version uses `&'arena StateTraversal` borrows instead of `Rc<StateTraversal>`. The arena is created per depth iteration and naturally scopes the lifetime of all nodes.

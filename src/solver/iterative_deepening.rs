@@ -4,7 +4,7 @@ use crate::game::board::{Board, BoardAdjuster};
 use crate::game::model::Game;
 use crate::solver::traits::{Instruction, Operation, Operator, Problem, Solution, Solver};
 use std::collections::HashSet;
-use std::rc::Rc;
+use typed_arena::Arena;
 
 #[derive(Debug)]
 pub struct IterativeDeepeningSolver<'a, T> {
@@ -160,10 +160,11 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
 
         while depth_limit <= self.maximum_depth {
             tracing::info!("Depth limit: {}", depth_limit);
-            let mut frontier = Vec::<StateTraversal<Board>>::default();
+            let arena = Arena::new();
+            let mut frontier = Vec::<&StateTraversal<'_, Board>>::default();
             let mut explored = HashSet::<Board>::default();
 
-            frontier.push(StateTraversal::initial_state(initial_board.clone()));
+            frontier.push(arena.alloc(StateTraversal::initial_state(initial_board.clone())));
 
             while let Some(candidate) = frontier.pop() {
                 explored.insert(candidate.state().clone());
@@ -197,7 +198,6 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                     return Some(Solution::new(self.initial_state.clone(), instructions));
                 }
 
-                let candidate = Rc::new(candidate);
                 for (child_candidate, operation) in Self::generate_children(candidate.state()) {
                     if self.calculate_child_depth(&child_candidate) < depth_limit
                         && !explored.contains(&child_candidate)
@@ -205,11 +205,11 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
                             .iter()
                             .any(|traversal| traversal.state() == &child_candidate)
                     {
-                        frontier.push(StateTraversal::intermediate_state(
-                            Rc::clone(&candidate),
+                        frontier.push(arena.alloc(StateTraversal::intermediate_state(
+                            candidate,
                             child_candidate,
                             operation,
-                        ));
+                        )));
                     }
                 }
             }
@@ -222,13 +222,13 @@ impl<'a> Solver<Game, Board> for IterativeDeepeningSolver<'a, Game> {
 }
 
 #[derive(Debug, PartialEq)]
-struct StateTraversal<S> {
-    previous_state: Option<Rc<StateTraversal<S>>>,
+struct StateTraversal<'a, S> {
+    previous_state: Option<&'a StateTraversal<'a, S>>,
     state: S,
     operation: Option<Operation>,
 }
 
-impl<S> StateTraversal<S> {
+impl<'a, S> StateTraversal<'a, S> {
     pub fn initial_state(state: S) -> Self {
         Self {
             previous_state: None,
@@ -238,7 +238,7 @@ impl<S> StateTraversal<S> {
     }
 
     pub fn intermediate_state(
-        previous_state: Rc<StateTraversal<S>>,
+        previous_state: &'a StateTraversal<'a, S>,
         state: S,
         operation: Operation,
     ) -> Self {
@@ -253,8 +253,8 @@ impl<S> StateTraversal<S> {
         &self.state
     }
 
-    pub fn previous_state(&self) -> Option<&StateTraversal<S>> {
-        self.previous_state.as_deref()
+    pub fn previous_state(&self) -> Option<&'a StateTraversal<'a, S>> {
+        self.previous_state
     }
 }
 

@@ -1232,6 +1232,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "typed-arena"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1419,6 +1425,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tracing-web",
+ "typed-arena",
  "wasm-bindgen-futures",
  "web-sys",
  "yew",
