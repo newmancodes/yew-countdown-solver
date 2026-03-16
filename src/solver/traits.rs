@@ -9,7 +9,7 @@ where
     fn solve(&self) -> Option<Solution<P, S>>;
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Operator {
     Add,
     Subtract,
@@ -17,7 +17,7 @@ pub enum Operator {
     Divide,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Operation {
     pub left: u32,
     pub operator: Operator,
@@ -25,7 +25,7 @@ pub struct Operation {
     pub result: u32,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Solution<P, S> {
     problem: P,
     instructions: Vec<Instruction<S>>,
@@ -48,7 +48,7 @@ impl<P, S> Solution<P, S> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Instruction<S> {
     state: S,
     operation: Option<Operation>,
