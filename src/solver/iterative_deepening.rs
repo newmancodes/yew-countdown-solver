@@ -21,7 +21,8 @@ impl<'a> IterativeDeepeningSolver<'a, Game> {
     }
 
     fn generate_children(board: &Board) -> Vec<(Board, Operation)> {
-        let mut children = Vec::<(Board, Operation)>::new();
+        let n = board.numbers().len();
+        let mut children = Vec::<(Board, Operation)>::with_capacity(2 * n * (n - 1));
 
         for i in 0..(board.numbers().len() - 1) {
             for j in i + 1..board.numbers().len() {
