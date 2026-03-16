@@ -1,4 +1,3 @@
-use rand::seq::SliceRandom;
 use rand::Rng;
 use thiserror::Error;
 
@@ -42,7 +41,6 @@ impl Board {
 
         let mut available_small_numbers =
             [Board::SMALL_NUMBERS.to_vec(), Board::SMALL_NUMBERS.to_vec()].concat();
-        available_small_numbers.shuffle(&mut rng);
 
         for _ in 0..small_number_count {
             let index = rng.random_range(0..available_small_numbers.len());
