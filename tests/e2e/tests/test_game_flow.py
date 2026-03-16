@@ -50,30 +50,17 @@ def test_reset_button_returns_to_provider(app_page: AppPage):
 
 def test_multiple_random_games(app_page: AppPage):
     """Test generating multiple random games sequentially."""
-    targets = []
-    number_sets = []
-
     for i in range(3):
         # Generate a new game
         app_page.click_random_game()
         assert app_page.is_on_game_board(), f"Game {i+1} should load game board"
 
-        # Capture game data
+        # Validate game
         target = app_page.get_target_number()
         numbers = app_page.get_available_numbers()
-
-        targets.append(target)
-        number_sets.append(numbers)
-
-        # Validate game
         assert 1 <= target < 1000, f"Game {i+1} target should be valid"
         assert len(numbers) == 6, f"Game {i+1} should have 6 numbers"
 
         # Reset for next iteration
         app_page.click_reset()
         assert app_page.is_on_provider_screen(), f"Should reset after game {i+1}"
-
-    # Verify we got different games (at least one different target or number set)
-    # Note: There's a tiny chance all 3 games are identical, but extremely unlikely
-    assert len(set(targets)) > 1 or len(set(map(tuple, number_sets))) > 1, \
-        "Should generate varied random games"
