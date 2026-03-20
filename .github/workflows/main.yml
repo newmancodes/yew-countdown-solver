@@ -127,6 +127,7 @@ jobs:
           action-on-unmanage-resources: delete
           deny-settings-mode: denyWriteAndDelete
           deny-settings-excluded-principals: ${{ secrets.DENY_SETTINGS_EXCLUDED_PRINCIPAL }}
+          deny-settings-apply-to-child-scopes: true
 
       - name: Deploy to Azure Static Web App
         run: |
