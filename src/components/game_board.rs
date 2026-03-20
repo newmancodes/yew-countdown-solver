@@ -76,7 +76,7 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                 }
                 SolutionState::Solving => {
                     // Yield to the browser event loop via a 0ms timeout so the
-                    // "Solving..." UI renders before the solver blocks the thread.
+                    // UI can update before the solver blocks the thread.
                     let solution_state = solution_state.clone();
                     let game = game.clone();
                     let timeout = Timeout::new(0, move || {
@@ -194,7 +194,7 @@ pub fn GameBoard(props: &GameBoardProps) -> Html {
                     aria-busy={(!is_not_attempted).to_string()}
                     aria-label="Solve game"
                 >
-                    { if *solution_state == SolutionState::Solving { "Solving..." } else { "Solve" } }
+                    { "Solve" }
                 </button>
 
                 <button
