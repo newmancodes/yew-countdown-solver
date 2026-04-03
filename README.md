@@ -11,7 +11,7 @@ A WebAssembly application that solves the numbers round from the British game sh
 | Layer | Technology |
 |-------|-----------|
 | Language | Rust (Edition 2021), compiled to `wasm32-unknown-unknown` |
-| UI Framework | [Yew](https://yew.rs/) 0.22 (client-side rendering) |
+| UI Framework | [Yew](https://yew.rs/) 0.23 (client-side rendering) |
 | Styling | [Tailwind CSS](https://tailwindcss.com/) v4 (utility classes in Rust `html!` macros) |
 | Build Tool | [Trunk](https://trunkrs.dev/) (WASM bundler + dev server) |
 | Arena Allocator | [`typed-arena`](https://docs.rs/typed-arena) for solver state nodes |
