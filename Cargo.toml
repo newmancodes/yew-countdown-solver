@@ -14,12 +14,12 @@ yew = { version="0.22", features=["csr"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
 tracing-web = "0.1"
-thiserror = "2.0.17"
+thiserror = "2.0.18"
 rand = "0.9.2"
 getrandom = { version = "0.3.4", features = ["wasm_js"] }
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 web-sys = { version = "0.3", features = ["HtmlInputElement", "Window", "Storage", "Performance"] }
-wasm-bindgen-futures = "0.4.56"
+wasm-bindgen-futures = "0.4.67"
 typed-arena = "2.0.2"
 
 [dev-dependencies]
