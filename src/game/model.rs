@@ -1,6 +1,6 @@
 use crate::game::board::Board;
 use crate::solver::traits::Problem;
-use rand::Rng;
+use rand::RngExt;
 use thiserror::Error;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

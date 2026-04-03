@@ -1,5 +1,5 @@
 use crate::components::ManualEntry;
-use rand::Rng;
+use rand::RngExt;
 use yew::prelude::*;
 use yew_countdown_solver::game::board::Board;
 use yew_countdown_solver::game::model::Game;
