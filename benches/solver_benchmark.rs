@@ -23,12 +23,13 @@ fn make_game(target: u32, numbers: &[u32]) -> Game {
 
 fn test_cases() -> Vec<(&'static str, Game)> {
     vec![
+        ("already-solved", make_game(100, &[1, 2, 3, 4, 5, 100])), // already solved
         ("1-step", make_game(12, &[1, 2, 3, 4, 5, 6])),
-        ("2-step", make_game(350, &[1, 4, 4, 5, 6, 50])),
-        ("3-step", make_game(410, &[1, 3, 3, 8, 9, 50])),
+        ("2-step", make_game(350, &[1, 4, 4, 5, 6, 50])), // easy
+        ("3-step", make_game(410, &[1, 3, 3, 8, 9, 50])), // medium
         ("4-step", make_game(277, &[2, 3, 3, 5, 6, 75])),
-        ("5-step", make_game(831, &[1, 10, 25, 50, 75, 100])),
-        ("impossible", make_game(824, &[3, 7, 6, 2, 1, 7])),
+        ("5-step", make_game(813, &[1, 10, 25, 50, 75, 100])), // hard
+        ("impossible", make_game(824, &[3, 7, 6, 2, 1, 7])), // impossible
     ]
 }
 

@@ -299,7 +299,7 @@ mod tests {
             (game!(350, 1, 4, 4, 5, 6, 50), 2),
             (game!(410, 1, 3, 3, 8, 9, 50), 3),
             (game!(277, 2, 3, 3, 5, 6, 75), 4),
-            (game!(831, 1, 10, 25, 50, 75, 100), 5),
+            (game!(813, 1, 10, 25, 50, 75, 100), 5),
         ];
 
         for (game, expected_solution_steps) in games_with_expected_solution_steps {
