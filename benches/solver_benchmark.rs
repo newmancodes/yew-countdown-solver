@@ -29,7 +29,7 @@ fn test_cases() -> Vec<(&'static str, Game)> {
         ("3-step", make_game(410, &[1, 3, 3, 8, 9, 50])), // medium
         ("4-step", make_game(277, &[2, 3, 3, 5, 6, 75])),
         ("5-step", make_game(813, &[1, 10, 25, 50, 75, 100])), // hard
-        ("impossible", make_game(824, &[3, 7, 6, 2, 1, 7])), // impossible
+        ("impossible", make_game(824, &[3, 7, 6, 2, 1, 7])),   // impossible
     ]
 }
 
