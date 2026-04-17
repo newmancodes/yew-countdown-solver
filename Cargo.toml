@@ -15,11 +15,11 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
 tracing-web = "0.1"
 thiserror = "2.0.18"
-rand = "0.10.0"
+rand = "0.10.1"
 getrandom = { version = "0.4.2", features = ["wasm_js"] }
 gloo-timers = { version = "0.4.0", features = ["futures"] }
 web-sys = { version = "0.3", features = ["HtmlInputElement", "Window", "Storage", "Performance"] }
-wasm-bindgen-futures = "0.4.67"
+wasm-bindgen-futures = "0.4.68"
 typed-arena = "2.0.2"
 
 [dev-dependencies]
